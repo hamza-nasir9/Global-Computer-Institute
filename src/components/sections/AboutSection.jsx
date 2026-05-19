@@ -42,73 +42,84 @@ export default function AboutSection() {
   return (
     <section id="about" className="py-12 md:py-24 px-4 sm:px-6 md:px-16" style={{ backgroundColor:'var(--bg-primary)' }}>
       <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          <div ref={imgRef} className="relative gsap-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-16 items-center">
+          
+          {/* Left Side - Image */}
+          <div ref={imgRef} className="relative gsap-hidden order-1 lg:order-1">
             <div className="relative rounded-3xl overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.25)]">
-              <div className="relative w-full h-[500px]">
+              <div className="relative w-full h-[300px] sm:h-[400px] md:h-[500px]">
                 <Image src={ABOUT_IMAGE} alt="GCI students in classroom" fill quality={85} className="object-cover object-center" sizes="(max-width:1024px) 100vw, 50vw" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
               </div>
-              <div className="absolute bottom-5 left-5">
-                <p className="text-white/55 text-xs tracking-widest uppercase">Est. 2005</p>
-                <p className="text-[#F5C842] font-display font-bold text-xl mt-0.5">20 Years of Excellence</p>
+              <div className="absolute bottom-4 left-4">
+                <p className="text-white/55 text-[10px] tracking-widest uppercase">Est. 2005</p>
+                <p className="text-[#F5C842] font-display font-bold text-base sm:text-xl mt-0.5">20 Years of Excellence</p>
               </div>
             </div>
-            <div className="absolute -bottom-6 -right-4 md:-right-6 glass-gold rounded-2xl p-5 min-w-[190px]" style={{ boxShadow:'var(--shadow-gold)' }}>
-              <div className="font-display text-3xl font-black text-[#F5C842]">15,000+</div>
-              <div className="text-sm font-medium mt-1" style={{ color:'var(--text-primary)' }}>Graduates Worldwide</div>
-              <div className="flex gap-1.5 mt-3">
+            
+            {/* Floating Badges - Responsive */}
+            <div className="absolute -bottom-4 -right-2 sm:-right-4 glass-gold rounded-2xl p-3 sm:p-5 min-w-[160px] sm:min-w-[190px]" style={{ boxShadow:'var(--shadow-gold)' }}>
+              <div className="font-display text-2xl sm:text-3xl font-black text-[#F5C842]">15,000+</div>
+              <div className="text-xs sm:text-sm font-medium mt-1" style={{ color:'var(--text-primary)' }}>Graduates Worldwide</div>
+              <div className="flex gap-1.5 mt-2 sm:mt-3">
                 {[GraduationCap, Award, Globe].map((Icon, i) => (
-                  <div key={i} className="w-7 h-7 rounded-full flex items-center justify-center"
+                  <div key={i} className="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center"
                     style={{ background:'rgba(212,160,23,0.20)', border:'1px solid rgba(212,160,23,0.35)' }}>
-                    <Icon size={13} className="text-[#F5C842]" />
+                    <Icon size={11} className="text-[#F5C842]" />
                   </div>
                 ))}
-                <span className="text-[#D4A017] text-xs ml-1 self-center font-semibold">+more</span>
+                <span className="text-[#D4A017] text-[10px] ml-1 self-center font-semibold">+more</span>
               </div>
             </div>
-            <div className="absolute -top-4 -left-4 glass rounded-xl px-4 py-3">
-              <div className="flex items-center gap-2">
-                <Award size={14} className="text-[#D4A017]" />
-                <p className="text-sm font-semibold" style={{ color:'var(--text-primary)' }}>Ranked #1</p>
+            
+            <div className="absolute -top-3 -left-3 glass rounded-xl px-3 py-2 sm:px-4 sm:py-3">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <Award size={12} className="text-[#D4A017]" />
+                <p className="text-xs sm:text-sm font-semibold" style={{ color:'var(--text-primary)' }}>Ranked #1</p>
               </div>
-              <p className="text-xs mt-0.5" style={{ color:'var(--text-secondary)' }}>Computer Institute in Karachi</p>
+              <p className="text-[10px] sm:text-xs mt-0.5" style={{ color:'var(--text-secondary)' }}>Institute in Karachi</p>
             </div>
           </div>
 
-          <div ref={textRef} className="gsap-hidden">
-            <SectionHeader label="About The Institute" title="Two Decades of" highlight="Transforming Lives" className="mb-6" />
-            <p className="text-base leading-relaxed mb-4" style={{ color:'var(--text-secondary)' }}>
+          {/* Right Side - Content */}
+          <div ref={textRef} className="gsap-hidden order-2 lg:order-2">
+            <SectionHeader label="About The Institute" title="Two Decades of" highlight="Transforming Lives" className="mb-4 md:mb-6" />
+            <p className="text-sm sm:text-base leading-relaxed mb-3 md:mb-4" style={{ color:'var(--text-secondary)' }}>
               Founded in 2005, Global Computer Institute (GCI) was born from a singular vision: to make world-class technology education accessible to every aspiring student in Karachi and across Pakistan.
             </p>
-            <p className="text-sm leading-relaxed mb-8" style={{ color:'var(--text-muted)' }}>
+            <p className="text-xs sm:text-sm leading-relaxed mb-6 md:mb-8" style={{ color:'var(--text-muted)' }}>
               From a single campus with 200 students, we have grown into a premier institution with 3 state-of-the-art campuses, 50+ programs, and a powerful alumni network of over 15,000 graduates worldwide.
             </p>
-            <div className="grid grid-cols-1 gap-2.5 mb-8">
+            
+            {/* Achievements Grid - Mobile Responsive */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5 mb-6 md:mb-8">
               {ACHIEVEMENTS.map((item, i) => (
-                <div key={i} data-stagger className="flex items-center gap-3 gsap-hidden">
-                  <CheckCircle size={15} className="text-[#D4A017] flex-shrink-0" />
-                  <span className="text-sm" style={{ color:'var(--text-secondary)' }}>{item}</span>
+                <div key={i} data-stagger className="flex items-center gap-2 sm:gap-3 gsap-hidden">
+                  <CheckCircle size={12} className="text-[#D4A017] flex-shrink-0" />
+                  <span className="text-xs sm:text-sm" style={{ color:'var(--text-secondary)' }}>{item}</span>
                 </div>
               ))}
             </div>
-            <div className="grid grid-cols-2 gap-3 mb-8">
+            
+            {/* Pillars Grid - Mobile Stack */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6 md:mb-8">
               {PILLARS.map((p, i) => (
-                <div key={i} data-stagger className="flex items-start gap-3 p-4 rounded-xl border transition-all duration-300 hover:border-[#D4A017]/28 group"
+                <div key={i} data-stagger className="flex items-start gap-3 p-3 sm:p-4 rounded-xl border transition-all duration-300 hover:border-[#D4A017]/28 group"
                   style={{ backgroundColor:'var(--bg-card)', borderColor:'var(--border-subtle)'}}>
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-[#D4A017]/20 transition-colors duration-300"
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-[#D4A017]/20 transition-colors duration-300"
                     style={{ background:'rgba(212,160,23,0.10)', border:'1px solid rgba(212,160,23,0.18)' }}>
-                    <p.icon size={15} className="text-[#D4A017]" />
+                    <p.icon size={13} className="text-[#D4A017]" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-semibold" style={{ color:'var(--text-primary)' }}>{p.title}</h4>
-                    <p className="text-xs mt-0.5 leading-relaxed" style={{ color:'var(--text-muted)' }}>{p.desc}</p>
+                    <h4 className="text-xs sm:text-sm font-semibold" style={{ color:'var(--text-primary)' }}>{p.title}</h4>
+                    <p className="text-[10px] sm:text-xs mt-0.5 leading-relaxed" style={{ color:'var(--text-muted)' }}>{p.desc}</p>
                   </div>
                 </div>
               ))}
             </div>
-            <a href="/about" className="inline-flex items-center gap-2 text-[#F5C842] font-semibold text-sm hover:gap-3 transition-all duration-300">
-              Discover Our Full Story <ArrowRight size={16} />
+            
+            <a href="/about" className="inline-flex items-center gap-2 text-[#F5C842] font-semibold text-xs sm:text-sm hover:gap-3 transition-all duration-300">
+              Discover Our Full Story <ArrowRight size={14} />
             </a>
           </div>
         </div>
