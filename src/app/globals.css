@@ -1,0 +1,222 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── DESIGN TOKENS ────────────────────────────────────────────────────────── */
+:root {
+  --bg-primary:        #0A0A0A;
+  --bg-section:        #111111;
+  --bg-card:           #161616;
+  --bg-card-hover:     #1E1E1E;
+  --bg-input:          #1A1A1A;
+  --text-primary:      #F4F4F5;
+  --text-secondary:    #A1A1AA;
+  --text-muted:        #52525B;
+  --border-subtle:     rgba(255,255,255,0.06);
+  --border-medium:     rgba(255,255,255,0.11);
+  --border-gold:       rgba(212,160,23,0.28);
+  --glass-bg:          rgba(255,255,255,0.04);
+  --glass-gold-bg:     rgba(212,160,23,0.08);
+  --glass-border:      rgba(255,255,255,0.08);
+  --glass-gold-border: rgba(212,160,23,0.22);
+  --shadow-card:       0 4px 24px rgba(0,0,0,0.55);
+  --shadow-card-lg:    0 12px 48px rgba(0,0,0,0.65);
+  --shadow-gold:       0 8px 28px rgba(212,160,23,0.40);
+  --shadow-gold-sm:    0 4px 16px rgba(212,160,23,0.28);
+  --scrollbar-track:   #0d0d0d;
+  --stat-divider:      rgba(212,160,23,0.14);
+}
+
+[data-theme="light"] {
+  --bg-primary:        #F9F7F2;
+  --bg-section:        #FFFFFF;
+  --bg-card:           #FFFFFF;
+  --bg-card-hover:     #F4F2EB;
+  --bg-input:          #EDE9E0;
+  --text-primary:      #111111;
+  --text-secondary:    #44403C;
+  --text-muted:        #78716C;
+  --border-subtle:     rgba(0,0,0,0.07);
+  --border-medium:     rgba(0,0,0,0.13);
+  --border-gold:       rgba(155,111,10,0.28);
+  --glass-bg:          rgba(255,255,255,0.80);
+  --glass-gold-bg:     rgba(212,160,23,0.09);
+  --glass-border:      rgba(0,0,0,0.09);
+  --glass-gold-border: rgba(155,111,10,0.22);
+  --shadow-card:       0 2px 16px rgba(0,0,0,0.08);
+  --shadow-card-lg:    0 8px 40px rgba(0,0,0,0.12);
+  --shadow-gold:       0 8px 28px rgba(155,111,10,0.25);
+  --shadow-gold-sm:    0 4px 14px rgba(155,111,10,0.18);
+  --scrollbar-track:   #e8e3d8;
+  --stat-divider:      rgba(155,111,10,0.14);
+}
+
+/* ─── BASE RESET ────────────────────────────────────────────────────────────── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-dm-sans), 'DM Sans', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
+}
+
+/* ─── THEME TRANSITIONS ──────────────────────────────────────────────────────
+   Activates AFTER 'theme-ready' class (added 2 rAF after first paint).
+   Only colour properties — GSAP owns transform and opacity.
+   Short 0.18s: feels instant, no lag.
+────────────────────────────────────────────────────────────────────────────── */
+html.theme-ready * {
+  transition:
+    background-color 0.18s ease,
+    border-color     0.18s ease,
+    color            0.18s ease,
+    fill             0.18s ease,
+    box-shadow       0.18s ease;
+}
+
+/* Never transition GSAP-animated elements — they own their own timing */
+html.theme-ready [data-gsap],
+html.theme-ready [data-entrance],
+html.theme-ready [data-slide-el],
+html.theme-ready [data-stat],
+html.theme-ready [data-hero],
+html.theme-ready [data-nav-link],
+html.theme-ready [data-ml],
+html.theme-ready [data-section],
+html.theme-ready [data-card],
+html.theme-ready .will-change-transform,
+html.theme-ready .gsap-anim,
+html.theme-ready .gsap-hidden {
+  transition: none !important;
+}
+
+/* ─── SCROLLBAR ─────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar        { width: 4px; height: 4px; }
+::-webkit-scrollbar-track  { background: var(--scrollbar-track); }
+::-webkit-scrollbar-thumb  { background: #D4A017; border-radius: 8px; }
+::-webkit-scrollbar-thumb:hover { background: #F5C842; }
+::selection { background: rgba(212,160,23,0.22); color: var(--text-primary); }
+
+/* ─── UTILITY CLASSES ───────────────────────────────────────────────────────── */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+}
+.glass-gold {
+  background: var(--glass-gold-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-gold-border);
+}
+.text-gold-gradient {
+  background: linear-gradient(135deg, #D4A017, #F5C842);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.section-divider {
+  width: 56px; height: 3px;
+  background: linear-gradient(90deg, #D4A017, #F5C842);
+  border-radius: 3px;
+}
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* ─── ANIMATIONS ────────────────────────────────────────────────────────────── */
+@keyframes scroll-x {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* ─── GSAP ANIMATION HELPER ─────────────────────────────────────────────────
+   Use className="gsap-hidden" instead of style={{ opacity: 0 }}.
+   CSS class is identical on server and client → no hydration mismatch.
+   GSAP overrides this at runtime via its own inline style.
+────────────────────────────────────────────────────────────────────────────── */
+.gsap-hidden { opacity: 0; }
+
+/* ─── RESPONSIVE ────────────────────────────────────────────────────────────── */
+/* Prevent long strings from overflowing on any screen */
+p, span, li, h1, h2, h3, h4, h5, h6, td, th {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* Images and media should never overflow their container */
+img, video, iframe, embed, object {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ─── PRINT ─────────────────────────────────────────────────────────────────── */
+@media print {
+  /* Hide unnecessary elements */
+  .no-print { display: none !important; }
+  nav, footer, aside, button, .btn, .no-print { display: none !important; }
+  
+  /* Keep body clean */
+  body { 
+    background: white !important; 
+    color: black !important; 
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  
+  /* ─── FIX: Input Fields Ko Clean Dikhana ─── */
+  input[type="number"],
+  input[type="text"],
+  input[type="date"],
+  select,
+  textarea {
+    border: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    font-size: inherit !important;
+    font-weight: normal !important;
+    -webkit-appearance: none !important;
+    appearance: none !important;
+  }
+  
+  /* Hide number input spinners */
+  input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+  
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    display: none !important;
+    -webkit-appearance: none !important;
+  }
+  
+  /* Hide date picker icon */
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    display: none !important;
+  }
+  
+  /* Remove select dropdown arrow */
+  select {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+  }
+  
+  /* Remove all borders and backgrounds */
+  input, select, textarea {
+    border: none !important;
+    background: none !important;
+    box-shadow: none !important;
+  }
+  
+  /* Better text display */
+  .print-value {
+    display: inline-block;
+  }
+}

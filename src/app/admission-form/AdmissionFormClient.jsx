@@ -1,0 +1,777 @@
+'use client';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import Navbar from '@/components/layout/Navbar';
+import Footer from '@/components/layout/Footer';
+import { useAuth } from '@/context/AuthContext';
+import { saveStudent } from '@/lib/studentStore';
+import { AlertCircle, CheckCircle, Lock, ArrowRight, Camera, Upload } from 'lucide-react';
+import Link from 'next/link';
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Course lists — exactly matching the physical GCI form
+──────────────────────────────────────────────────────────────────────────────*/
+const LEFT_COURSES = [
+  'Diploma Information Technology (DIT)',
+  'Certificate Information Technology (CIT)',
+  'Microsoft Office',
+  'Multimedia & Graphics',
+  'Web Design & Development',
+  'English Language / IELTS Preparation',
+  'Job Package',
+  'Auto Cad 2D & 3D',
+];
+const RIGHT_COURSES = [
+  'Social Media Marketing',
+  'Computerized Accounting',
+  'Computer Hardware & Networking',
+  'Computer Languages C++ PHP',
+  'Freelancing Career',
+  'School Teaching Course / Summer Camp',
+];
+const HOW_OPTIONS = ["By Advertising", "By Global's Student", "By Friend", "Other"];
+const TIMINGS      = ['Morning (8AM–12PM)', 'Afternoon (12PM–4PM)', 'Evening (4PM–8PM)'];
+
+/* ─── Shared input style tokens ──────────────────────────────────────────── */
+const S = {
+  underline: {
+    width: '100%', padding: '8px 10px', fontSize: 14, outline: 'none',
+    backgroundColor: 'transparent', border: 'none',
+    borderBottom: '1px solid var(--border-medium)',
+    color: 'var(--text-primary)', transition: 'border-color 0.15s',
+  },
+};
+
+/* ─── InlineField — label + underline input ─────────────────────────────── */
+function InlineField({ label, name, value, onChange, type = 'text', placeholder = '', style = {} }) {
+  return (
+    <div className="flex items-baseline gap-2" style={{ minWidth: 0, ...style }}>
+      <span className="text-sm font-semibold whitespace-nowrap flex-shrink-0"
+        style={{ color: 'var(--text-primary)' }}>{label}</span>
+      <input
+        type={type} name={name} value={value} onChange={onChange}
+        placeholder={placeholder}
+        className="flex-1 min-w-0"
+        style={S.underline}
+        onFocus={e => (e.target.style.borderBottomColor = '#D4A017')}
+        onBlur={e  => (e.target.style.borderBottomColor = 'var(--border-medium)')}
+      />
+    </div>
+  );
+}
+
+/* ─── Checkbox component ────────────────────────────────────────────────── */
+function Checkbox({ checked, onChange }) {
+  return (
+    <div
+      onClick={onChange}
+      className="w-4 h-4 border-2 rounded-sm flex-shrink-0 flex items-center justify-center cursor-pointer transition-colors"
+      style={{
+        borderColor:     checked ? '#D4A017' : 'var(--border-medium)',
+        backgroundColor: checked ? '#D4A017' : 'transparent',
+      }}>
+      {checked && (
+        <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+          <path d="M1 4L3.5 6.5L9 1" stroke="black" strokeWidth="2"
+            strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      )}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Main component
+═══════════════════════════════════════════════════════════════════════════ */
+export default function AdmissionFormClient() {
+  const { user, loading: authLoading } = useAuth();
+  const fileRef = useRef(null);
+
+  /* ── State ── */
+  const [submitted,    setSubmitted]    = useState(false);
+  const [submittedId,  setSubmittedId]  = useState(null);
+  const [submitting,   setSubmitting]   = useState(false);
+  const [errors,       setErrors]       = useState({});
+  const [othersText,   setOthersText]   = useState('');
+  const [otherHowText, setOtherHowText] = useState('');
+  const [imgPreview,   setImgPreview]   = useState('');   // Data-URL for local preview only
+  const [imgPath,      setImgPath]      = useState('');   // Server path after upload
+  const [imgUploading, setImgUploading] = useState(false);
+
+  const [form, setForm] = useState({
+    regNo: '', fullName: '', fatherName: '', address: '',
+    profession: '', phone: '', guardianPhone: '',
+    qualification: '', whatsapp: '',
+    courseToJoin: '', timing: '',
+    howKnew: [],
+    selectedCourses: [],
+    dateOfAdmission: '', monthlyFee: '', admissionFee: '', totalFee: '',
+  });
+
+  /* Pre-fill name/phone from logged-in user */
+  useEffect(() => {
+    if (user?.name)  setForm(p => ({ ...p, fullName: p.fullName || user.name }));
+    if (user?.phone) setForm(p => ({ ...p, phone:    p.phone    || user.phone }));
+  }, [user]);
+
+  /* ── Handlers ── */
+  const handleChange = useCallback((e) => {
+    const { name, value } = e.target;
+    setForm(p => ({ ...p, [name]: value }));
+    setErrors(p => ({ ...p, [name]: '', general: '' }));
+  }, []);
+
+  const toggleCourse = useCallback((course) => {
+    setForm(p => ({
+      ...p,
+      selectedCourses: p.selectedCourses.includes(course)
+        ? p.selectedCourses.filter(c => c !== course)
+        : [...p.selectedCourses, course],
+    }));
+    setErrors(p => ({ ...p, courses: '' }));
+  }, []);
+
+  const toggleHow = useCallback((opt) => {
+    setForm(p => ({
+      ...p,
+      howKnew: p.howKnew.includes(opt)
+        ? p.howKnew.filter(x => x !== opt)
+        : [...p.howKnew, opt],
+    }));
+  }, []);
+
+  /* ── Photo upload — uploads to /api/upload, stores filesystem path ── */
+  const handleImage = useCallback(async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!['image/jpeg', 'image/jpg', 'image/png'].includes(file.type)) {
+      setErrors(p => ({ ...p, image: 'Please upload a JPG or PNG image.' }));
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      setErrors(p => ({ ...p, image: 'Image must be smaller than 2 MB.' }));
+      return;
+    }
+
+    // Show local preview immediately
+    const reader = new FileReader();
+    reader.onload = (ev) => setImgPreview(ev.target.result);
+    reader.readAsDataURL(file);
+
+    // Upload to server filesystem
+    setImgUploading(true);
+    setErrors(p => ({ ...p, image: '' }));
+    try {
+      const fd = new FormData();
+      fd.append('photo', file);
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        headers: {
+          ...(user?.id   ? { 'x-user-id':   String(user.id)   } : {}),
+          ...(user?.role ? { 'x-user-role': String(user.role) } : {}),
+        },
+        body: fd,
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setErrors(p => ({ ...p, image: data.error || 'Upload failed.' }));
+        setImgPreview('');
+        return;
+      }
+
+      setImgPath(data.url);  // e.g. /uploads/1234567890-abc123.jpg
+    } catch {
+      setErrors(p => ({ ...p, image: 'Upload failed — please try again.' }));
+      setImgPreview('');
+    } finally {
+      setImgUploading(false);
+    }
+  }, [user]);
+
+  /* ── Validation ── */
+  function validate() {
+    const e = {};
+    if (!form.fullName.trim())   e.fullName   = 'Student name is required';
+    if (!form.fatherName.trim()) e.fatherName = "Father's name is required";
+    if (!form.phone.trim())      e.phone      = 'Phone number is required';
+    if (form.selectedCourses.length === 0 && !form.courseToJoin.trim() && !othersText.trim())
+      e.courses = 'Please select at least one course';
+    return e;
+  }
+
+  /* ── Submit ── */
+  async function handleSubmit(e) {
+    e.preventDefault();
+    const errs = validate();
+    if (Object.keys(errs).length) { setErrors(errs); window.scrollTo({ top: 300, behavior: 'smooth' }); return; }
+
+    setSubmitting(true);
+    try {
+      const courses = [
+        ...form.selectedCourses,
+        ...(othersText.trim() ? [`Others: ${othersText.trim()}`] : []),
+      ];
+      const howKnewFull = [
+        ...form.howKnew,
+        ...(form.howKnew.includes('Other') && otherHowText.trim()
+          ? [`Other: ${otherHowText.trim()}`]
+          : []),
+      ];
+
+      const primaryCourse = courses[0] || form.courseToJoin.trim() || 'Not specified';
+
+      const payload = {
+        /* Core fields */
+        fullName:        form.fullName.trim(),
+        fatherName:      form.fatherName.trim(),
+        course:          primaryCourse,
+        phone:           form.phone.trim(),
+        email:           user?.email || '',
+        address:         form.address.trim(),
+        qualification:   form.qualification.trim(),
+
+        /* Photo — filesystem path from upload API (empty string if no photo) */
+        image:           imgPath || '',
+
+        /* Extended fields */
+        cnic:            form.regNo.trim(),
+        regNo:           form.regNo.trim(),
+        profession:      form.profession.trim(),
+        guardianPhone:   form.guardianPhone.trim(),
+        whatsapp:        form.whatsapp.trim(),
+        timing:          form.timing,
+        courseToJoin:    form.courseToJoin.trim(),
+        howKnew:         howKnewFull,
+        selectedCourses: courses,
+
+        /* Fee */
+        dateOfAdmission: form.dateOfAdmission,
+        monthlyFee:      form.monthlyFee,
+        admissionFee:    form.admissionFee,
+        totalFee:        form.totalFee,
+
+        status:  'Pending',
+        userId:  user?.id || null,
+      };
+
+      /* ── Try MongoDB via API ── */
+      let apiSuccess = false;
+      let savedId    = `local-${Date.now()}`;
+      try {
+        const res = await fetch('/api/admission', {
+          method:  'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(user?.id   ? { 'x-user-id':   String(user.id)   } : {}),
+            ...(user?.role ? { 'x-user-role': String(user.role) } : {}),
+          },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          setErrors({ general: data.error || 'Submission failed. Please check your details.' });
+          return;
+        }
+
+        savedId    = data.admission?._id || data.admission?.id || savedId;
+        apiSuccess = true;
+      } catch (networkErr) {
+        console.warn('[admission] API unavailable, saving locally only:', networkErr.message);
+      }
+
+      /* ── Always also save to localStorage (secondary cache / fallback) ── */
+      try {
+        saveStudent({
+          ...payload,
+          image: imgPath || imgPreview || '',  // fallback to preview if upload failed
+          id: savedId,
+          _id: savedId,
+        });
+      } catch { /* localStorage may be full — non-fatal */ }
+
+      setSubmittedId(savedId);
+      setSubmitted(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    } catch (err) {
+      console.error('[admission] Unexpected error:', err);
+      setErrors({ general: 'An unexpected error occurred. Please try again.' });
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     Render helpers
+  ──────────────────────────────────────────────────────────────────────────*/
+  const lineBorder    = '1px solid var(--border-medium)';
+  const sectionHeadBg = 'linear-gradient(135deg,#D4A017,#F5C842)';
+  const cardBg        = 'var(--bg-card)';
+
+  if (authLoading) return (
+    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--bg-primary)' }}>
+      <span className="w-8 h-8 border-2 border-[#D4A017]/30 border-t-[#D4A017] rounded-full animate-spin" />
+    </div>
+  );
+
+  if (!user) return (
+    <>
+      <Navbar />
+      <main className="min-h-screen flex items-center justify-center px-4 pt-24 pb-16" style={{ backgroundColor: 'var(--bg-primary)' }}>
+        <div className="max-w-md w-full text-center">
+          <div className="w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center"
+            style={{ background: 'rgba(212,160,23,0.12)', border: '2px solid rgba(212,160,23,0.30)' }}>
+            <Lock size={36} className="text-[#D4A017]" />
+          </div>
+          <h1 className="font-display text-3xl font-bold mb-3" style={{ color: 'var(--text-primary)' }}>Login Required</h1>
+          <p className="text-sm leading-relaxed mb-8" style={{ color: 'var(--text-secondary)' }}>
+            You must be logged in to submit an admission application.
+          </p>
+          <div className="flex gap-3 justify-center flex-wrap">
+            <Link href="/auth/login?redirect=/admission-form"
+              className="inline-flex items-center gap-2 bg-gold-gradient text-black font-bold px-7 py-3 rounded-full text-sm"
+              style={{ boxShadow: 'var(--shadow-gold-sm)' }}>
+              <ArrowRight size={15} />Sign In to Continue
+            </Link>
+            <Link href="/auth/register"
+              className="inline-flex items-center gap-2 border font-semibold px-7 py-3 rounded-full text-sm"
+              style={{ borderColor: 'var(--border-gold)', color: 'var(--text-primary)' }}>
+              Create Account
+            </Link>
+          </div>
+        </div>
+      </main>
+      <Footer />
+    </>
+  );
+
+  if (submitted) return (
+    <>
+      <Navbar />
+      <main className="min-h-screen flex items-center justify-center px-4 pt-24 pb-16" style={{ backgroundColor: 'var(--bg-primary)' }}>
+        <div className="max-w-md w-full text-center">
+          <div className="w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center"
+            style={{ background: 'rgba(212,160,23,0.15)', border: '2px solid rgba(212,160,23,0.4)' }}>
+            <CheckCircle size={40} className="text-[#D4A017]" />
+          </div>
+          <h1 className="font-display text-3xl font-bold mb-3" style={{ color: 'var(--text-primary)' }}>
+            Application Submitted!
+          </h1>
+          <p className="text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>
+            Your admission application has been received successfully.
+            Our team will contact you within 24 hours.
+          </p>
+          <p className="text-xs mb-8 font-mono px-3 py-1.5 rounded-lg inline-block"
+            style={{ backgroundColor: 'var(--bg-card)', color: '#D4A017', border: '1px solid var(--border-gold)' }}>
+            Application ID: GCI-{String(submittedId).slice(-12)}
+          </p>
+          <div className="flex gap-3 justify-center flex-wrap">
+            <Link href="/dashboard/student?tab=admission"
+              className="inline-flex items-center gap-2 bg-gold-gradient text-black font-bold px-7 py-3 rounded-full text-sm"
+              style={{ boxShadow: 'var(--shadow-gold-sm)' }}>
+              View My Application
+            </Link>
+            <Link href="/"
+              className="inline-flex items-center gap-2 border font-semibold px-7 py-3 rounded-full text-sm"
+              style={{ borderColor: 'var(--border-gold)', color: 'var(--text-primary)' }}>
+              Back to Home
+            </Link>
+          </div>
+        </div>
+      </main>
+      <Footer />
+    </>
+  );
+
+  /* ══════════════════════════════════════════════════════════════════════════
+     The admission form — UI unchanged, only photo upload wiring updated
+  ═══════════════════════════════════════════════════════════════════════════*/
+  return (
+    <>
+      <Navbar />
+      <main className="pt-20 md:pt-24 pb-16 px-3 sm:px-6 md:px-8" style={{ backgroundColor: 'var(--bg-primary)' }}>
+        <div className="max-w-4xl mx-auto">
+
+          {/* Page title */}
+          <div className="text-center mb-6 md:mb-8">
+            <span className="inline-block text-xs font-semibold tracking-[0.18em] uppercase mb-2" style={{ color: '#D4A017' }}>
+              Enrollment
+            </span>
+            <h1 className="font-display text-2xl md:text-4xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>
+              Admission{' '}
+              <span style={{ background: 'linear-gradient(135deg,#D4A017,#F5C842)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+                Application Form
+              </span>
+            </h1>
+            <p className="text-xs md:text-sm" style={{ color: 'var(--text-secondary)' }}>
+              Logged in as <span className="text-[#D4A017] font-semibold">{user.name}</span>
+            </p>
+          </div>
+
+          {/* General error */}
+          {errors.general && (
+            <div className="flex items-start gap-2 p-3 rounded-xl mb-4 text-sm"
+              style={{ backgroundColor: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', color: '#f87171' }}>
+              <AlertCircle size={16} className="flex-shrink-0 mt-0.5" />
+              <span>{errors.general}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} noValidate>
+            <div className="rounded-2xl overflow-hidden"
+              style={{ border: '2px solid var(--border-gold)', backgroundColor: cardBg, boxShadow: 'var(--shadow-card)' }}>
+
+              {/* ── HEADER BANNER ── */}
+              <div className="flex items-center justify-between px-4 md:px-8 py-4"
+                style={{ background: sectionHeadBg }}>
+                <div>
+                  <h2 className="font-display font-black text-lg md:text-2xl text-black leading-tight">Global</h2>
+                  <p className="font-bold text-sm md:text-base text-black/90 leading-tight">Computer Institute</p>
+                  <p className="text-[10px] md:text-xs text-black/70">Registered by: Sindh Board of Technical Education</p>
+                </div>
+                <div className="text-right">
+                  <div className="bg-black/80 text-[#F5C842] font-black text-xs md:text-sm px-3 py-2 rounded-lg tracking-wider">
+                    ADMISSION<br />FORM
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 md:p-8 space-y-5 md:space-y-6">
+
+                {/* ── ROW: Reg No + Photo upload ── */}
+                <div className="flex items-start gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Reg. No.</span>
+                      <div className="flex gap-1">
+                        {[...Array(8)].map((_, i) => (
+                          <div key={i} className="w-6 h-7 border rounded flex items-center justify-center text-xs font-bold"
+                            style={{ borderColor: 'var(--border-medium)', backgroundColor: 'var(--bg-input)', color: 'var(--text-primary)' }}>
+                            {(form.regNo || '')[i] || ''}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <input
+                      type="text" name="regNo" value={form.regNo} onChange={handleChange}
+                      placeholder="Registration Number (optional)"
+                      maxLength={20}
+                      className="w-full mt-2 px-3 py-2 rounded-lg text-sm"
+                      style={{ backgroundColor: 'var(--bg-input)', border: lineBorder, color: 'var(--text-primary)', outline: 'none' }}
+                      onFocus={e => (e.target.style.borderColor = '#D4A017')}
+                      onBlur={e  => (e.target.style.borderColor = 'var(--border-medium)')}
+                    />
+                  </div>
+
+                  {/* ── Photo upload box ── */}
+                  <div className="flex-shrink-0 text-center">
+                    <input
+                      ref={fileRef}
+                      type="file"
+                      accept="image/jpeg,image/jpg,image/png"
+                      onChange={handleImage}
+                      className="hidden"
+                    />
+                    <div
+                      onClick={() => !imgUploading && fileRef.current?.click()}
+                      className="w-20 h-24 md:w-24 md:h-28 border-2 rounded-lg flex flex-col items-center justify-center overflow-hidden relative transition-all group"
+                      style={{
+                        borderColor:     errors.image ? '#ef4444' : imgPreview ? '#D4A017' : 'var(--border-gold)',
+                        backgroundColor: 'var(--bg-input)',
+                        cursor:          imgUploading ? 'wait' : 'pointer',
+                      }}>
+                      {imgUploading ? (
+                        <span className="w-6 h-6 border-2 border-[#D4A017]/30 border-t-[#D4A017] rounded-full animate-spin" />
+                      ) : imgPreview ? (
+                        <>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={imgPreview} alt="Student photo" className="absolute inset-0 w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <Camera size={18} className="text-white" />
+                          </div>
+                          {/* Green tick if uploaded to server */}
+                          {imgPath && (
+                            <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-green-500 flex items-center justify-center">
+                              <svg width="8" height="6" viewBox="0 0 8 6" fill="none">
+                                <path d="M1 3L3 5L7 1" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+                              </svg>
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          <Camera size={20} className="mb-1" style={{ color: errors.image ? '#ef4444' : '#D4A017' }} />
+                          <span className="text-[10px] text-center px-1 font-medium leading-tight"
+                            style={{ color: errors.image ? '#ef4444' : 'var(--text-muted)' }}>Photo<br />1 × 1</span>
+                          <Upload size={12} className="mt-1 opacity-50" style={{ color: 'var(--text-muted)' }} />
+                        </>
+                      )}
+                    </div>
+                    {errors.image && (
+                      <p className="text-[10px] text-red-400 mt-1 max-w-[96px]">{errors.image}</p>
+                    )}
+                    <p className="text-[9px] mt-0.5" style={{ color: 'var(--text-muted)' }}>JPG/PNG ≤2MB</p>
+                  </div>
+                </div>
+
+                {/* ── Student Name ── */}
+                <div>
+                  <InlineField label="Student Name" name="fullName" value={form.fullName} onChange={handleChange} />
+                  {errors.fullName && (
+                    <p className="text-xs text-red-400 mt-1 flex items-center gap-1">
+                      <AlertCircle size={11} />{errors.fullName}
+                    </p>
+                  )}
+                </div>
+
+                {/* ── Father's Name ── */}
+                <div>
+                  <InlineField label="Father's Name" name="fatherName" value={form.fatherName} onChange={handleChange} />
+                  {errors.fatherName && (
+                    <p className="text-xs text-red-400 mt-1 flex items-center gap-1">
+                      <AlertCircle size={11} />{errors.fatherName}
+                    </p>
+                  )}
+                </div>
+
+                {/* ── Address ── */}
+                <InlineField label="Address" name="address" value={form.address} onChange={handleChange} />
+
+                {/* ── Profession · Student Mob · Guardian Mob ── */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <InlineField label="Profession" name="profession" value={form.profession} onChange={handleChange} />
+                  <div>
+                    <InlineField label="Student Mob #" name="phone" value={form.phone} onChange={handleChange} type="tel" />
+                    {errors.phone && <p className="text-xs text-red-400 mt-1">{errors.phone}</p>}
+                  </div>
+                  <InlineField label="Guardian Mob #" name="guardianPhone" value={form.guardianPhone} onChange={handleChange} type="tel" />
+                </div>
+
+                {/* ── Qualification · WhatsApp ── */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <InlineField label="Qualification" name="qualification" value={form.qualification} onChange={handleChange} />
+                  <InlineField label="WhatsApp #" name="whatsapp" value={form.whatsapp} onChange={handleChange} type="tel" />
+                </div>
+
+                {/* ── Course To Be Join · Timing ── */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <InlineField label="Course To Be Join" name="courseToJoin" value={form.courseToJoin} onChange={handleChange} />
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-sm font-semibold whitespace-nowrap flex-shrink-0" style={{ color: 'var(--text-primary)' }}>
+                      Timing
+                    </span>
+                    <select
+                      name="timing" value={form.timing} onChange={handleChange}
+                      className="flex-1 min-w-0 px-2 py-1 rounded text-sm"
+                      style={{ backgroundColor: 'var(--bg-input)', border: lineBorder, color: 'var(--text-primary)', outline: 'none' }}>
+                      <option value="">Select</option>
+                      {TIMINGS.map(t => <option key={t}>{t}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                {/* ── How did you get to know ── */}
+                <div className="rounded-xl p-4" style={{ border: lineBorder, backgroundColor: 'var(--bg-input)' }}>
+                  <p className="text-sm font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>
+                    How did you get to know about Global Computer Institute?
+                  </p>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {HOW_OPTIONS.map(opt => (
+                      <label key={opt} className="flex items-center gap-2 cursor-pointer group">
+                        <Checkbox checked={form.howKnew.includes(opt)} onChange={() => toggleHow(opt)} />
+                        <span className="text-xs group-hover:text-[#D4A017] transition-colors select-none"
+                          style={{ color: 'var(--text-secondary)' }}>{opt}</span>
+                      </label>
+                    ))}
+                  </div>
+                  {form.howKnew.includes('Other') && (
+                    <input
+                      type="text" value={otherHowText} onChange={e => setOtherHowText(e.target.value)}
+                      placeholder="Please specify…"
+                      className="mt-3 w-full px-3 py-2 rounded-lg text-sm"
+                      style={{ backgroundColor: 'var(--bg-card)', border: lineBorder, color: 'var(--text-primary)', outline: 'none' }}
+                      onFocus={e => (e.target.style.borderColor = '#D4A017')}
+                      onBlur={e  => (e.target.style.borderColor = 'var(--border-medium)')}
+                    />
+                  )}
+                </div>
+
+                {/* ── CHOOSE THE COURSE ── */}
+                <div className="rounded-xl overflow-hidden" style={{ border: '2px solid var(--border-gold)' }}>
+                  <div className="text-center py-2.5 font-black text-sm tracking-widest"
+                    style={{ background: sectionHeadBg, color: '#000' }}>
+                    CHOOSE THE COURSE
+                  </div>
+                  {errors.courses && (
+                    <p className="text-xs text-red-400 px-4 pt-2 flex items-center gap-1">
+                      <AlertCircle size={11} />{errors.courses}
+                    </p>
+                  )}
+                  <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2">
+                    {/* Left column */}
+                    <div className="space-y-2">
+                      {LEFT_COURSES.map(course => (
+                        <label key={course} className="flex items-center gap-2 cursor-pointer group">
+                          <Checkbox
+                            checked={form.selectedCourses.includes(course)}
+                            onChange={() => toggleCourse(course)}
+                          />
+                          <span className="text-xs md:text-sm group-hover:text-[#D4A017] transition-colors select-none"
+                            style={{ color: 'var(--text-secondary)' }}>{course}</span>
+                        </label>
+                      ))}
+                    </div>
+                    {/* Right column */}
+                    <div className="space-y-2">
+                      {RIGHT_COURSES.map(course => (
+                        <label key={course} className="flex items-center gap-2 cursor-pointer group">
+                          <Checkbox
+                            checked={form.selectedCourses.includes(course)}
+                            onChange={() => toggleCourse(course)}
+                          />
+                          <span className="text-xs md:text-sm group-hover:text-[#D4A017] transition-colors select-none"
+                            style={{ color: 'var(--text-secondary)' }}>{course}</span>
+                        </label>
+                      ))}
+                      {/* Others free-text */}
+                      <div className="flex items-center gap-2 mt-1">
+                        <div
+                          className="w-4 h-4 border-2 rounded-sm flex-shrink-0 transition-colors"
+                          style={{
+                            borderColor:     othersText ? '#D4A017' : 'var(--border-medium)',
+                            backgroundColor: othersText ? 'rgba(212,160,23,0.15)' : 'transparent',
+                          }}
+                        />
+                        <span className="text-xs md:text-sm flex-shrink-0" style={{ color: 'var(--text-secondary)' }}>Others</span>
+                        <input
+                          type="text" value={othersText} onChange={e => setOthersText(e.target.value)}
+                          placeholder="specify course…"
+                          className="flex-1 min-w-0 px-2 py-0.5 text-xs rounded"
+                          style={{ backgroundColor: 'var(--bg-input)', border: '1px solid var(--border-medium)', color: 'var(--text-primary)', outline: 'none' }}
+                          onFocus={e => (e.target.style.borderColor = '#D4A017')}
+                          onBlur={e  => (e.target.style.borderColor = 'var(--border-medium)')}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ── Fee Section ── */}
+                <div className="rounded-xl overflow-hidden" style={{ border: lineBorder }}>
+                  <div className="grid grid-cols-2">
+                    <div style={{ borderRight: lineBorder }}>
+                      <div className="p-3 flex items-baseline gap-2" style={{ borderBottom: lineBorder }}>
+                        <span className="text-xs font-semibold whitespace-nowrap" style={{ color: 'var(--text-primary)' }}>Date of Admission:</span>
+                        <input
+                          type="date" name="dateOfAdmission" value={form.dateOfAdmission} onChange={handleChange}
+                          className="flex-1 min-w-0 text-xs px-1 rounded"
+                          style={{ backgroundColor: 'var(--bg-input)', border: '1px solid var(--border-medium)', color: 'var(--text-primary)', outline: 'none' }}
+                          onFocus={e => (e.target.style.borderColor = '#D4A017')}
+                          onBlur={e  => (e.target.style.borderColor = 'var(--border-medium)')}
+                        />
+                      </div>
+                      <div className="p-3 flex items-baseline gap-2">
+                        <span className="text-xs font-semibold whitespace-nowrap" style={{ color: 'var(--text-primary)' }}>Monthly Fee:</span>
+                        <input
+                          type="text" name="monthlyFee" value={form.monthlyFee} onChange={handleChange}
+                          placeholder="PKR"
+                          className="flex-1 min-w-0 text-xs px-2 py-0.5 rounded"
+                          style={{ backgroundColor: 'var(--bg-input)', border: '1px solid var(--border-medium)', color: 'var(--text-primary)', outline: 'none' }}
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <div className="p-3 flex items-baseline gap-2" style={{ borderBottom: lineBorder }}>
+                        <span className="text-xs font-semibold whitespace-nowrap" style={{ color: 'var(--text-primary)' }}>Admission Fee:</span>
+                        <input
+                          type="text" name="admissionFee" value={form.admissionFee} onChange={handleChange}
+                          placeholder="PKR"
+                          className="flex-1 min-w-0 text-xs px-2 py-0.5 rounded"
+                          style={{ backgroundColor: 'var(--bg-input)', border: '1px solid var(--border-medium)', color: 'var(--text-primary)', outline: 'none' }}
+                        />
+                      </div>
+                      <div className="p-3 flex items-baseline gap-2">
+                        <span className="text-xs font-semibold whitespace-nowrap" style={{ color: 'var(--text-primary)' }}>Total Fee:</span>
+                        <input
+                          type="text" name="totalFee" value={form.totalFee} onChange={handleChange}
+                          placeholder="PKR"
+                          className="flex-1 min-w-0 text-xs px-2 py-0.5 rounded"
+                          style={{ backgroundColor: 'var(--bg-input)', border: '1px solid var(--border-medium)', color: 'var(--text-primary)', outline: 'none' }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ── Terms ── */}
+                <div className="rounded-xl p-4 space-y-1" style={{ backgroundColor: 'var(--bg-input)', border: lineBorder }}>
+                  {[
+                    'Admission, Monthly & SBTE fee once paid are non-refundable.',
+                    'Monthly Fee must be paid on/before 5th of every month, otherwise late fee Rs. 25/- per day will be charged.',
+                    'Examination fee for SBTE should be paid at the time of registration which is not included in course training fee.',
+                  ].map((t, i) => (
+                    <p key={i} className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                      <span className="font-bold text-[#D4A017] mr-1">{i + 1}.</span>{t}
+                    </p>
+                  ))}
+                </div>
+
+                {/* ── Signatures ── */}
+                <div className="grid grid-cols-2 gap-6 pt-2">
+                  {['Administrator', 'Signature of Applicant'].map(role => (
+                    <div key={role} className="text-center">
+                      <div className="h-12 border-b mb-2" style={{ borderColor: 'var(--border-medium)' }} />
+                      <p className="text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>{role}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* ── Campus Info ── */}
+                <div className="rounded-xl overflow-hidden" style={{ border: lineBorder }}>
+                  {[
+                    { num: '1', label: 'Campus 1', address: 'Saudabad Malir Indus Mehran Society A-22, Near 1st P.S.O Petrol Pump, Karachi-75080', contact: '0213-4504816, 0333-3580212 | gcisbte11@gmail.com' },
+                    { num: '2', label: 'Campus 2', address: 'Model Colony Near Railway Crossing Rabbani Masjid, Karachi', contact: '0322-2511944, 0318-2511944' },
+                    { num: '3', label: 'Campus 3', address: 'Shahfaisal Colony-2 Behind Fauji Foundation Hospital Big Plots A-7, Karachi', contact: '0317-4740335' },
+                  ].map(campus => (
+                    <div key={campus.num} className="flex items-start gap-3 px-4 py-3 border-b last:border-b-0"
+                      style={{ borderColor: 'var(--border-subtle)' }}>
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                        <div className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-black text-black flex-shrink-0"
+                          style={{ background: sectionHeadBg }}>
+                          {campus.num}
+                        </div>
+                        <span className="text-xs font-bold text-[#D4A017] flex-shrink-0">{campus.label}</span>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-[11px] font-medium" style={{ color: 'var(--text-primary)' }}>{campus.address}</p>
+                        <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>Contact: {campus.contact}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* ── Submit ── */}
+                <button
+                  type="submit"
+                  disabled={submitting || imgUploading}
+                  className="w-full flex items-center justify-center gap-2 text-black font-bold py-4 rounded-2xl text-base transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed"
+                  style={{ background: sectionHeadBg, boxShadow: 'var(--shadow-gold)' }}>
+                  {submitting
+                    ? <span className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                    : imgUploading
+                    ? <><span className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />Uploading photo…</>
+                    : <><CheckCircle size={18} />Submit Admission Application</>}
+                </button>
+
+              </div>
+            </div>
+          </form>
+        </div>
+      </main>
+      <Footer />
+    </>
+  );
+}
