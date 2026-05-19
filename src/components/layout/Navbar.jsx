@@ -16,7 +16,6 @@ const NAV_LINKS = [
   { label: 'Courses',    href: '/courses'    },
   { label: 'Admissions', href: '/admissions' },
   { label: 'Campuses',   href: '/campuses'   },
-  { label: 'Faculty',    href: '/faculty'    },
   { label: 'Contact',    href: '/contact'    },
 ];
 
