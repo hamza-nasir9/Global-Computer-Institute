@@ -5,7 +5,6 @@ import CoursesSection   from '@/components/sections/CoursesSection';
 import AboutSection     from '@/components/sections/AboutSection';
 import WhyChooseUs      from '@/components/sections/WhyChooseUs';
 import StatsSection     from '@/components/sections/StatsSection';
-import CampusesSection  from '@/components/sections/CampusesSection';
 import GallerySection   from '@/components/sections/GallerySection';
 import AdmissionsSection from '@/components/sections/AdmissionsSection';
 import TestimonialsSection from '@/components/sections/TestimonialsSection';
@@ -22,7 +21,6 @@ export default function HomePage() {
       <AboutSection />
       <WhyChooseUs />
       <StatsSection />
-      <CampusesSection />
       <GallerySection />
       <AdmissionsSection />
       <TestimonialsSection />
