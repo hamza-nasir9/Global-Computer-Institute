@@ -7,11 +7,14 @@ const FOOTER_LINKS = {
   Institute: ['About GCI','Faculty','Campuses','Accreditations','Career Services','News & Events','Gallery','Testimonials'],
   Students: ['Admissions','Fee Structure','Scholarships','Student Portal','Library','Internships','Alumni Network','FAQs'],
 };
+
+// ✅ UPDATED CAMPUS ADDRESSES (As per your image)
 const CAMPUSES_INFO = [
-  { name:'Main Campus',  addr:'Block 13-D, Gulshan-e-Iqbal, Karachi 75300' },
-  { name:'North Campus', addr:'Block H, North Nazimabad, Karachi 74700' },
-  { name:'South Campus', addr:'Saddar Town, M.A. Jinnah Road, Karachi 74400' },
+  { name:'Saudabad Campus', addr:'Plot# A-22 Indus Mehran Society, Near 1st P.S.O Petrol Pump, Saudabad Malir, Karachi-75080' },
+  { name:'Model Colony Campus', addr:'Near Railway Crossing, Rabbani Masjid, Model Colony, Karachi' },
+  { name:'Shahfaisal Campus', addr:'Near Fauji Foundation Hospital, Plot# 3/147, Shahfaisal Colony-3, Karachi-75230' },
 ];
+
 const SOCIALS = [
   { Icon: Facebook, href:'#' },{ Icon: Twitter, href:'#' },
   { Icon: Instagram, href:'#' },{ Icon: Linkedin, href:'#' },{ Icon: Youtube, href:'#' },
@@ -33,17 +36,23 @@ export default function Footer() {
             <p className="text-sm leading-relaxed mb-6 max-w-sm" style={{ color:'var(--text-secondary)' }}>
               Karachi&apos;s premier technology institute, shaping the next generation of digital professionals since 2005. Three campuses, 50+ programs, 15,000+ alumni.
             </p>
+            
+            {/* ✅ UPDATED Contact Info */}
             <div className="space-y-3 mb-6">
-              {[
-                { Icon:MapPin, text:'Main Campus: Plot 42, Block 13-D, Gulshan-e-Iqbal, Karachi' },
-                { Icon:Phone,  text:'+92-21-111-GCI-786 (111-424-786)' },
-                { Icon:Mail,   text:'admissions@gci.edu.pk' },
-              ].map(({ Icon, text }, i) => (
-                <div key={i} className="flex items-start gap-2.5 text-sm" style={{ color:'var(--text-secondary)' }}>
-                  <Icon size={15} className="text-[#D4A017] mt-0.5 flex-shrink-0" /><span>{text}</span>
-                </div>
-              ))}
+              <div className="flex items-start gap-2.5 text-sm" style={{ color:'var(--text-secondary)' }}>
+                <MapPin size={15} className="text-[#D4A017] mt-0.5 flex-shrink-0" />
+                <span>Plot# A-22 Indus Mehran Society, Near 1st P.S.O Petrol Pump, Saudabad Malir, Karachi-75080</span>
+              </div>
+              <div className="flex items-start gap-2.5 text-sm" style={{ color:'var(--text-secondary)' }}>
+                <Phone size={15} className="text-[#D4A017] mt-0.5 flex-shrink-0" />
+                <span>0333-3580212, 0313-2246517</span>
+              </div>
+              <div className="flex items-start gap-2.5 text-sm" style={{ color:'var(--text-secondary)' }}>
+                <Mail size={15} className="text-[#D4A017] mt-0.5 flex-shrink-0" />
+                <span>gcisbte11@gmail.com</span>
+              </div>
             </div>
+            
             <div className="flex gap-2">
               {SOCIALS.map(({ Icon, href }, i) => (
                 <a key={i} href={href}
@@ -79,6 +88,7 @@ export default function Footer() {
           ))}
         </div>
 
+        {/* ✅ UPDATED Campus Cards with new addresses */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
           {CAMPUSES_INFO.map(c => (
             <div key={c.name} className="glass rounded-xl p-4 flex items-start gap-3" style={{ borderColor:'var(--border-medium)' }}>
@@ -86,6 +96,7 @@ export default function Footer() {
               <div>
                 <p className="text-sm font-medium" style={{ color:'var(--text-primary)' }}>{c.name}</p>
                 <p className="text-xs mt-0.5" style={{ color:'var(--text-muted)' }}>{c.addr}</p>
+                <p className="text-[10px] mt-1" style={{ color:'#D4A017' }}>Contact: {c.name === 'Saudabad Campus' ? '0333-3580212, 0313-2246517' : c.name === 'Model Colony Campus' ? '0322-2511944, 0318-2511944' : '0317-4740335, 0347-2763587'}</p>
               </div>
             </div>
           ))}
