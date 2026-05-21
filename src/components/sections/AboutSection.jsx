@@ -25,14 +25,14 @@ export default function AboutSection() {
   useEffect(() => {
     if (!imgRef.current || !textRef.current) return;
     const ctx = gsap.context(() => {
-      gsap.fromTo(imgRef.current, {x:-50 },
+      gsap.fromTo(imgRef.current, {x:-50, opacity:0},
         { opacity:1, x:0, duration:0.75, ease:'power3.out',
           scrollTrigger:{ trigger:imgRef.current, start:'top 85%', once:true } });
-      gsap.fromTo(textRef.current, {x:50 },
+      gsap.fromTo(textRef.current, {x:50, opacity:0},
         { opacity:1, x:0, duration:0.75, ease:'power3.out',
           scrollTrigger:{ trigger:textRef.current, start:'top 85%', once:true } });
       const staggerEls = textRef.current.querySelectorAll('[data-stagger]');
-      gsap.fromTo(staggerEls, {x:20 },
+      gsap.fromTo(staggerEls, {x:20, opacity:0},
         { opacity:1, x:0, stagger:0.07, duration:0.45, ease:'power2.out',
           scrollTrigger:{ trigger:textRef.current, start:'top 80%', once:true } });
     });
@@ -40,25 +40,26 @@ export default function AboutSection() {
   }, []);
 
   return (
-    <section id="about" className="py-12 md:py-24 px-4 sm:px-6 md:px-16" style={{ backgroundColor:'var(--bg-primary)' }}>
+    <section id="about" className="py-12 md:py-24 px-4 sm:px-6 md:px-16 overflow-hidden" style={{ backgroundColor:'var(--bg-primary)' }}>
       <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-16 items-center">
-          
-          {/* Left Side - Image */}
-          <div ref={imgRef} className="relative gsap-hidden order-1 lg:order-1">
+        <div className="flex flex-col lg:flex-row gap-8 lg:gap-16 items-start">
+
+          {/* LEFT SIDE: IMAGE SECTION */}
+          <div ref={imgRef} className="relative w-full lg:w-1/2 gsap-hidden">
             <div className="relative rounded-3xl overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.25)]">
-              <div className="relative w-full h-[300px] sm:h-[400px] md:h-[500px]">
+              <div className="relative w-full h-[300px] sm:h-[400px] md:h-[450px] lg:h-[500px]">
                 <Image src={ABOUT_IMAGE} alt="GCI students in classroom" fill quality={85} className="object-cover object-center" sizes="(max-width:1024px) 100vw, 50vw" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
               </div>
-              <div className="absolute bottom-4 left-4">
-                <p className="text-white/55 text-[10px] tracking-widest uppercase">Est. 2005</p>
+              {/* Bottom Left Badge */}
+              <div className="absolute bottom-4 left-4 z-10">
+                <p className="text-white/70 text-[10px] sm:text-xs tracking-widest uppercase">Est. 2005</p>
                 <p className="text-[#F5C842] font-display font-bold text-base sm:text-xl mt-0.5">20 Years of Excellence</p>
               </div>
             </div>
-            
-            {/* Floating Badges - Responsive */}
-            <div className="absolute -bottom-4 -right-2 sm:-right-4 glass-gold rounded-2xl p-3 sm:p-5 min-w-[160px] sm:min-w-[190px]" style={{ boxShadow:'var(--shadow-gold)' }}>
+
+            {/* Floating Badge 1 - 15,000+ Graduates */}
+            <div className="absolute -bottom-4 -right-2 sm:-bottom-6 sm:-right-4 md:-right-6 glass-gold rounded-2xl p-3 sm:p-5 min-w-[150px] sm:min-w-[190px] z-20" style={{ boxShadow:'var(--shadow-gold)' }}>
               <div className="font-display text-2xl sm:text-3xl font-black text-[#F5C842]">15,000+</div>
               <div className="text-xs sm:text-sm font-medium mt-1" style={{ color:'var(--text-primary)' }}>Graduates Worldwide</div>
               <div className="flex gap-1.5 mt-2 sm:mt-3">
@@ -68,22 +69,24 @@ export default function AboutSection() {
                     <Icon size={11} className="text-[#F5C842]" />
                   </div>
                 ))}
-                <span className="text-[#D4A017] text-[10px] ml-1 self-center font-semibold">+more</span>
+                <span className="text-[#D4A017] text-[10px] sm:text-xs ml-1 self-center font-semibold">+more</span>
               </div>
             </div>
-            
-            <div className="absolute -top-3 -left-3 glass rounded-xl px-3 py-2 sm:px-4 sm:py-3">
+
+            {/* Floating Badge 2 - Ranked #1 */}
+            <div className="absolute -top-3 -left-3 sm:-top-4 sm:-left-4 glass rounded-xl px-3 py-2 sm:px-4 sm:py-3 z-20">
               <div className="flex items-center gap-1.5 sm:gap-2">
                 <Award size={12} className="text-[#D4A017]" />
                 <p className="text-xs sm:text-sm font-semibold" style={{ color:'var(--text-primary)' }}>Ranked #1</p>
               </div>
-              <p className="text-[10px] sm:text-xs mt-0.5" style={{ color:'var(--text-secondary)' }}>Institute in Karachi</p>
+              <p className="text-[10px] sm:text-xs mt-0.5" style={{ color:'var(--text-secondary)' }}>Computer Institute in Karachi</p>
             </div>
           </div>
 
-          {/* Right Side - Content */}
-          <div ref={textRef} className="gsap-hidden order-2 lg:order-2">
+          {/* RIGHT SIDE: CONTENT SECTION */}
+          <div ref={textRef} className="relative w-full lg:w-1/2 gsap-hidden">
             <SectionHeader label="About The Institute" title="Two Decades of" highlight="Transforming Lives" className="mb-4 md:mb-6" />
+            
             <p className="text-sm sm:text-base leading-relaxed mb-3 md:mb-4" style={{ color:'var(--text-secondary)' }}>
               Founded in 2005, Global Computer Institute (GCI) was born from a singular vision: to make world-class technology education accessible to every aspiring student in Karachi and across Pakistan.
             </p>
@@ -91,7 +94,7 @@ export default function AboutSection() {
               From a single campus with 200 students, we have grown into a premier institution with 3 state-of-the-art campuses, 50+ programs, and a powerful alumni network of over 15,000 graduates worldwide.
             </p>
             
-            {/* Achievements Grid - Mobile Responsive */}
+            {/* Achievements Grid - Responsive */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5 mb-6 md:mb-8">
               {ACHIEVEMENTS.map((item, i) => (
                 <div key={i} data-stagger className="flex items-center gap-2 sm:gap-3 gsap-hidden">
@@ -101,7 +104,7 @@ export default function AboutSection() {
               ))}
             </div>
             
-            {/* Pillars Grid - Mobile Stack */}
+            {/* Pillars Grid - Responsive */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6 md:mb-8">
               {PILLARS.map((p, i) => (
                 <div key={i} data-stagger className="flex items-start gap-3 p-3 sm:p-4 rounded-xl border transition-all duration-300 hover:border-[#D4A017]/28 group"

@@ -5,6 +5,7 @@ import {
   Handshake, Trophy, ClipboardList, PhoneCall, FileText,
   CreditCard, Sparkles, Target, Eye, Lightbulb, Award, Heart,
   CheckCircle, ArrowRight, MapPin, Mail, Phone,
+  ShoppingBag, Monitor, Network, Type, Laptop, Server, Star, Calculator,
 } from 'lucide-react';
 
 const ICON_MAP = {
@@ -14,6 +15,7 @@ const ICON_MAP = {
   Handshake, Trophy, ClipboardList, PhoneCall, FileText,
   CreditCard, Sparkles, Target, Eye, Lightbulb, Award, Heart,
   CheckCircle, ArrowRight, MapPin, Mail, Phone,
+  ShoppingBag, Monitor, Network, Type, Laptop, Server, Star, Calculator,
 };
 
 export function getIcon(name) {

@@ -13,13 +13,11 @@ import { createContext, useContext, useState, useEffect, useCallback } from 'rea
 
 const AuthContext = createContext({
   user: null, loading: true,
-  login: async () => { }, register: async () => { }, logout: () => { },
+  login: async () => {}, register: async () => {}, logout: () => {},
 });
 
-
-
 const STORAGE_KEY = 'gci_user';
-const USERS_KEY = 'gci_users';
+const USERS_KEY   = 'gci_users';
 
 const USE_API =
   typeof process !== 'undefined' &&
@@ -33,7 +31,7 @@ function getUsers() {
   try { return JSON.parse(localStorage.getItem(USERS_KEY) || '[]'); } catch { return []; }
 }
 function saveUsers(arr) {
-  try { localStorage.setItem(USERS_KEY, JSON.stringify(arr)); } catch { }
+  try { localStorage.setItem(USERS_KEY, JSON.stringify(arr)); } catch {}
 }
 function seedAdmin() {
   const users = getUsers();
@@ -75,7 +73,7 @@ async function localRegister({ name, email, password, phone }) {
    API (Phase 2) helpers
 ──────────────────────────────────────────────────────────────── */
 async function apiLogin({ email, password }) {
-  const res = await fetch('/api/auth/login', {
+  const res  = await fetch('/api/auth/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
@@ -88,7 +86,7 @@ async function apiLogin({ email, password }) {
 }
 
 async function apiRegister({ name, email, password, phone }) {
-  const res = await fetch('/api/auth/register', {
+  const res  = await fetch('/api/auth/register', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ name, email, password, phone }),
@@ -103,7 +101,7 @@ async function apiRegister({ name, email, password, phone }) {
    Provider
 ──────────────────────────────────────────────────────────────── */
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
+  const [user,    setUser]    = useState(null);
   const [loading, setLoading] = useState(true);
 
   /* Restore session from localStorage on mount */
@@ -113,7 +111,7 @@ export function AuthProvider({ children }) {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) setUser(JSON.parse(stored));
-    } catch { }
+    } catch {}
     setLoading(false);
   }, []);
 
@@ -124,7 +122,7 @@ export function AuthProvider({ children }) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(safe));
     // legacy compat: keep sessionStorage admin flag for old /admin page
     if (safe.role === 'admin') {
-      try { sessionStorage.setItem('gci_admin', 'true'); } catch { }
+      try { sessionStorage.setItem('gci_admin', 'true'); } catch {}
     }
     setUser(safe);
     return safe;
@@ -140,8 +138,8 @@ export function AuthProvider({ children }) {
   }, []);
 
   const logout = useCallback(() => {
-    try { localStorage.removeItem(STORAGE_KEY); } catch { }
-    try { sessionStorage.removeItem('gci_admin'); } catch { }
+    try { localStorage.removeItem(STORAGE_KEY); } catch {}
+    try { sessionStorage.removeItem('gci_admin'); } catch {}
     setUser(null);
     // loading stays false after initial mount, logout is instant
   }, []);

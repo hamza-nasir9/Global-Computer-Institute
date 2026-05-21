@@ -8,7 +8,7 @@ import CourseCard from '@/components/ui/CourseCard';
 import { COURSE_DETAILS } from '@/lib/data';
 
 const CATEGORIES = ['All','Development','Creative Design','Data Analytics','IT Fundamentals','Office Skills','Marketing','Accounting','Language','Kids Programs'];
-const HERO_IMAGE = 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1600&q=85';
+const HERO_IMAGE = '/images/campus/lab-04.jpg';
 
 export default function CoursesPageClient() {
   const [activeCat, setActiveCat] = useState('All');

@@ -9,7 +9,7 @@ import { MapPin, Users, ArrowRight, Wifi, Monitor, BookOpen, Coffee, FlaskConica
 import { CAMPUSES } from '@/lib/data';
 import { gsap, ScrollTrigger } from '@/lib/gsap';
 
-const HERO_IMAGE = 'https://images.unsplash.com/photo-1562774053-701939374585?w=1600&q=85';
+const HERO_IMAGE = '/images/campus/interior-01.jpg';
 const FACILITIES = [
   { icon:Monitor, title:'High-Speed Computer Labs', desc:'Latest hardware and software in every lab' },
   { icon:Wifi,    title:'Gigabit Internet',          desc:'Uninterrupted connectivity campus-wide' },

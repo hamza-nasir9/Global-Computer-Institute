@@ -10,7 +10,7 @@ import { ADMISSION_STEPS } from '@/lib/data';
 import { GraduationCap, Phone, CheckCircle, Clock, Calendar, Users, DollarSign, BookOpen, Award } from 'lucide-react';
 import { gsap, ScrollTrigger } from '@/lib/gsap';
 
-const HERO_IMAGE = 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=1600&q=85';
+const HERO_IMAGE = '/images/campus/lab-03.jpg';
 const REQUIREMENTS = [
   'Matriculation (SSC) or equivalent (minimum)',
   'Age 16+ for most programs',

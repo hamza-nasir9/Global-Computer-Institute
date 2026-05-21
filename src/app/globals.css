@@ -157,66 +157,7 @@ img, video, iframe, embed, object {
 
 /* ─── PRINT ─────────────────────────────────────────────────────────────────── */
 @media print {
-  /* Hide unnecessary elements */
-  .no-print { display: none !important; }
-  nav, footer, aside, button, .btn, .no-print { display: none !important; }
-  
-  /* Keep body clean */
-  body { 
-    background: white !important; 
-    color: black !important; 
-    padding: 0 !important;
-    margin: 0 !important;
-  }
-  
-  /* ─── FIX: Input Fields Ko Clean Dikhana ─── */
-  input[type="number"],
-  input[type="text"],
-  input[type="date"],
-  select,
-  textarea {
-    border: none !important;
-    background: transparent !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    font-size: inherit !important;
-    font-weight: normal !important;
-    -webkit-appearance: none !important;
-    appearance: none !important;
-  }
-  
-  /* Hide number input spinners */
-  input[type="number"] {
-    -moz-appearance: textfield;
-    appearance: textfield;
-  }
-  
-  input[type="number"]::-webkit-inner-spin-button,
-  input[type="number"]::-webkit-outer-spin-button {
-    display: none !important;
-    -webkit-appearance: none !important;
-  }
-  
-  /* Hide date picker icon */
-  input[type="date"]::-webkit-calendar-picker-indicator {
-    display: none !important;
-  }
-  
-  /* Remove select dropdown arrow */
-  select {
-    -webkit-appearance: none !important;
-    appearance: none !important;
-  }
-  
-  /* Remove all borders and backgrounds */
-  input, select, textarea {
-    border: none !important;
-    background: none !important;
-    box-shadow: none !important;
-  }
-  
-  /* Better text display */
-  .print-value {
-    display: inline-block;
-  }
+  .no-print           { display: none !important; }
+  nav, footer, aside  { display: none !important; }
+  body                { background: white !important; color: black !important; }
 }

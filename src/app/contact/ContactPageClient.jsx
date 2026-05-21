@@ -7,7 +7,7 @@ import SectionHeader from '@/components/ui/SectionHeader';
 import { MapPin, Phone, Mail, Clock, Send, CheckCircle } from 'lucide-react';
 import { gsap, ScrollTrigger } from '@/lib/gsap';
 
-const HERO_IMAGE = 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1600&q=85';
+const HERO_IMAGE = '/images/campus/reception-01.jpg';
 const CAMPUSES = [
   { name:'Main Campus',  area:'Gulshan-e-Iqbal', addr:'Plot 42, Block 13-D, Gulshan-e-Iqbal, Karachi 75300', phone:'+92-21-111-424-786 Ext 1', email:'main@gci.edu.pk', hours:'Mon–Sat: 8 AM – 9 PM', mapUrl:'https://maps.google.com/?q=Gulshan-e-Iqbal+Karachi', color:'#D4A017' },
   { name:'North Campus', area:'North Nazimabad',  addr:'Block H, North Nazimabad, Karachi 74700',           phone:'+92-21-111-424-786 Ext 2', email:'north@gci.edu.pk', hours:'Mon–Sat: 8 AM – 9 PM', mapUrl:'https://maps.google.com/?q=North+Nazimabad+Karachi', color:'#60A5FA' },

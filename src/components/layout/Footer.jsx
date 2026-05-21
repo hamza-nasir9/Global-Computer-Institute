@@ -8,78 +8,84 @@ const FOOTER_LINKS = {
   Students: ['Admissions','Fee Structure','Scholarships','Student Portal','Library','Internships','Alumni Network','FAQs'],
 };
 
-// ✅ UPDATED CAMPUS ADDRESSES (As per your image)
+// ✅ Updated Campus Addresses (As per your image)
 const CAMPUSES_INFO = [
-  { name:'Saudabad Campus', addr:'Plot# A-22 Indus Mehran Society, Near 1st P.S.O Petrol Pump, Saudabad Malir, Karachi-75080' },
-  { name:'Model Colony Campus', addr:'Near Railway Crossing, Rabbani Masjid, Model Colony, Karachi' },
-  { name:'Shahfaisal Campus', addr:'Near Fauji Foundation Hospital, Plot# 3/147, Shahfaisal Colony-3, Karachi-75230' },
+  { name: 'Saudabad Campus', addr: 'Plot# A-22 Indus Mehran Society, Near 1st P.S.O Petrol Pump, Saudabad Malir, Karachi-75080', phone: '0333-3580212, 0313-2246517' },
+  { name: 'Model Colony Campus', addr: 'Near Railway Crossing, Rabbani Masjid, Model Colony, Karachi', phone: '0322-2511944, 0318-2511944' },
+  { name: 'Shahfaisal Campus', addr: 'Near Fauji Foundation Hospital, Plot# 3/147, Shahfaisal Colony-3, Karachi-75230', phone: '0317-4740335, 0347-2763587' },
 ];
 
 const SOCIALS = [
-  { Icon: Facebook, href:'#' },{ Icon: Twitter, href:'#' },
-  { Icon: Instagram, href:'#' },{ Icon: Linkedin, href:'#' },{ Icon: Youtube, href:'#' },
+  { Icon: Facebook, href: '#' }, { Icon: Twitter, href: '#' },
+  { Icon: Instagram, href: '#' }, { Icon: Linkedin, href: '#' }, { Icon: Youtube, href: '#' },
 ];
 
 export default function Footer() {
   return (
-    <footer id="contact" style={{ backgroundColor:'var(--bg-primary)', borderTop:'1px solid var(--border-gold)' }}>
-      <div className="max-w-7xl mx-auto px-6 md:px-16 pt-16 pb-8">
+    <footer id="contact" style={{ backgroundColor: 'var(--bg-primary)', borderTop: '1px solid var(--border-gold)' }}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-16 pt-12 md:pt-16 pb-6 md:pb-8">
+        
+        {/* Main Footer Grid - Responsive */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 md:gap-10 mb-8 md:mb-14">
+          
+          {/* Logo & Info Section */}
           <div className="lg:col-span-2">
-            <Link href="/" className="flex items-center gap-3 mb-5">
-              <div className="w-10 h-10 rounded-xl bg-gold-gradient flex items-center justify-center font-display font-black text-black text-lg" style={{ boxShadow:'var(--shadow-gold-sm)' }}>G</div>
+            <Link href="/" className="flex items-center gap-3 mb-4 md:mb-5">
+              <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-gold-gradient flex items-center justify-center font-display font-black text-black text-base md:text-lg" style={{ boxShadow: 'var(--shadow-gold-sm)' }}>G</div>
               <div>
-                <span className="font-display font-bold text-xl" style={{ color:'var(--text-primary)' }}>GCI<span className="text-[#F5C842]"> Institute</span></span>
-                <p className="text-[10px] tracking-widest uppercase -mt-0.5" style={{ color:'var(--text-muted)' }}>Global Computer Institute</p>
+                <span className="font-display font-bold text-lg md:text-xl" style={{ color: 'var(--text-primary)' }}>GCI<span className="text-[#F5C842]"> Institute</span></span>
+                <p className="text-[8px] md:text-[10px] tracking-widest uppercase -mt-0.5" style={{ color: 'var(--text-muted)' }}>Global Computer Institute</p>
               </div>
             </Link>
-            <p className="text-sm leading-relaxed mb-6 max-w-sm" style={{ color:'var(--text-secondary)' }}>
-              Karachi&apos;s premier technology institute, shaping the next generation of digital professionals since 2005. Three campuses, 50+ programs, 15,000+ alumni.
+            <p className="text-xs md:text-sm leading-relaxed mb-4 md:mb-6 max-w-sm" style={{ color: 'var(--text-secondary)' }}>
+              Karachi's premier technology institute, shaping the next generation of digital professionals since 2005. Three campuses, 50+ programs, 15,000+ alumni.
             </p>
             
-            {/* ✅ UPDATED Contact Info */}
-            <div className="space-y-3 mb-6">
-              <div className="flex items-start gap-2.5 text-sm" style={{ color:'var(--text-secondary)' }}>
-                <MapPin size={15} className="text-[#D4A017] mt-0.5 flex-shrink-0" />
+            {/* ✅ Updated Contact Info */}
+            <div className="space-y-2 md:space-y-3 mb-4 md:mb-6">
+              <div className="flex items-start gap-2 text-xs md:text-sm" style={{ color: 'var(--text-secondary)' }}>
+                <MapPin size={14} className="text-[#D4A017] mt-0.5 flex-shrink-0" />
                 <span>Plot# A-22 Indus Mehran Society, Near 1st P.S.O Petrol Pump, Saudabad Malir, Karachi-75080</span>
               </div>
-              <div className="flex items-start gap-2.5 text-sm" style={{ color:'var(--text-secondary)' }}>
-                <Phone size={15} className="text-[#D4A017] mt-0.5 flex-shrink-0" />
+              <div className="flex items-start gap-2 text-xs md:text-sm" style={{ color: 'var(--text-secondary)' }}>
+                <Phone size={14} className="text-[#D4A017] mt-0.5 flex-shrink-0" />
                 <span>0333-3580212, 0313-2246517</span>
               </div>
-              <div className="flex items-start gap-2.5 text-sm" style={{ color:'var(--text-secondary)' }}>
-                <Mail size={15} className="text-[#D4A017] mt-0.5 flex-shrink-0" />
+              <div className="flex items-start gap-2 text-xs md:text-sm" style={{ color: 'var(--text-secondary)' }}>
+                <Mail size={14} className="text-[#D4A017] mt-0.5 flex-shrink-0" />
                 <span>gcisbte11@gmail.com</span>
               </div>
             </div>
             
-            <div className="flex gap-2">
+            {/* Social Icons - Responsive */}
+            <div className="flex gap-2 flex-wrap">
               {SOCIALS.map(({ Icon, href }, i) => (
                 <a key={i} href={href}
-                  className="w-9 h-9 rounded-xl flex items-center justify-center border transition-all duration-300 hover:scale-110 hover:-translate-y-0.5"
-                  style={{ backgroundColor:'var(--bg-card)', borderColor:'var(--border-medium)', color:'var(--text-secondary)' }}
-                  onMouseEnter={e => { e.currentTarget.style.color='#F5C842'; e.currentTarget.style.borderColor='rgba(212,160,23,0.40)'; e.currentTarget.style.backgroundColor='rgba(212,160,23,0.10)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.color='var(--text-secondary)'; e.currentTarget.style.borderColor='var(--border-medium)'; e.currentTarget.style.backgroundColor='var(--bg-card)'; }}>
-                  <Icon size={15} />
+                  className="w-8 h-8 md:w-9 md:h-9 rounded-xl flex items-center justify-center border transition-all duration-300 hover:scale-110 hover:-translate-y-0.5"
+                  style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-medium)', color: 'var(--text-secondary)' }}
+                  onMouseEnter={e => { e.currentTarget.style.color = '#F5C842'; e.currentTarget.style.borderColor = 'rgba(212,160,23,0.40)'; e.currentTarget.style.backgroundColor = 'rgba(212,160,23,0.10)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.borderColor = 'var(--border-medium)'; e.currentTarget.style.backgroundColor = 'var(--bg-card)'; }}>
+                  <Icon size={13} />
                 </a>
               ))}
             </div>
           </div>
 
+          {/* Footer Links Sections */}
           {Object.entries(FOOTER_LINKS).map(([heading, links]) => (
             <div key={heading}>
-              <h4 className="font-semibold text-sm mb-4 relative pb-3" style={{ color:'var(--text-primary)' }}>
+              <h4 className="font-semibold text-sm mb-3 md:mb-4 relative pb-2 md:pb-3" style={{ color: 'var(--text-primary)' }}>
                 {heading}
-                <span className="absolute bottom-0 left-0 w-8 h-0.5 bg-[#D4A017] rounded-full" />
+                <span className="absolute bottom-0 left-0 w-6 md:w-8 h-0.5 bg-[#D4A017] rounded-full" />
               </h4>
-              <ul className="space-y-2.5">
+              <ul className="space-y-2">
                 {links.map(link => (
                   <li key={link}>
-                    <Link href="#" className="text-sm flex items-center gap-1.5 group transition-colors duration-300"
-                      style={{ color:'var(--text-secondary)' }}
-                      onMouseEnter={e => e.currentTarget.style.color='#F5C842'}
-                      onMouseLeave={e => e.currentTarget.style.color='var(--text-secondary)'}>
-                      <span className="w-1 h-1 rounded-full flex-shrink-0" style={{ backgroundColor:'rgba(212,160,23,0.35)' }} />{link}
+                    <Link href="#" className="text-xs md:text-sm flex items-center gap-1.5 group transition-colors duration-300"
+                      style={{ color: 'var(--text-secondary)' }}
+                      onMouseEnter={e => e.currentTarget.style.color = '#F5C842'}
+                      onMouseLeave={e => e.currentTarget.style.color = 'var(--text-secondary)'}>
+                      <span className="w-1 h-1 rounded-full flex-shrink-0" style={{ backgroundColor: 'rgba(212,160,23,0.35)' }} />{link}
                     </Link>
                   </li>
                 ))}
@@ -88,27 +94,30 @@ export default function Footer() {
           ))}
         </div>
 
-        {/* ✅ UPDATED Campus Cards with new addresses */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+        {/* Campus Cards - Responsive Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 mb-8 md:mb-10">
           {CAMPUSES_INFO.map(c => (
-            <div key={c.name} className="glass rounded-xl p-4 flex items-start gap-3" style={{ borderColor:'var(--border-medium)' }}>
-              <MapPin size={16} className="text-[#D4A017] flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-sm font-medium" style={{ color:'var(--text-primary)' }}>{c.name}</p>
-                <p className="text-xs mt-0.5" style={{ color:'var(--text-muted)' }}>{c.addr}</p>
-                <p className="text-[10px] mt-1" style={{ color:'#D4A017' }}>Contact: {c.name === 'Saudabad Campus' ? '0333-3580212, 0313-2246517' : c.name === 'Model Colony Campus' ? '0322-2511944, 0318-2511944' : '0317-4740335, 0347-2763587'}</p>
+            <div key={c.name} className="glass rounded-xl p-3 md:p-4 flex flex-col gap-2" style={{ borderColor: 'var(--border-medium)' }}>
+              <div className="flex items-start gap-2">
+                <MapPin size={14} className="text-[#D4A017] flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{c.name}</p>
+                  <p className="text-[10px] md:text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{c.addr}</p>
+                  <p className="text-[9px] md:text-[10px] mt-1 text-[#D4A017]" style={{ color: '#D4A017' }}>📞 {c.phone}</p>
+                </div>
               </div>
             </div>
           ))}
         </div>
 
-        <div className="pt-6 flex flex-col md:flex-row items-center justify-between gap-3" style={{ borderTop:'1px solid var(--border-subtle)' }}>
-          <p className="text-xs" style={{ color:'var(--text-muted)' }}>
-            &copy; {new Date().getFullYear()} Global Computer Institute (GCI). All rights reserved.
+        {/* Copyright Section - Responsive */}
+        <div className="pt-4 md:pt-6 flex flex-col md:flex-row items-center justify-between gap-3 text-center md:text-left" style={{ borderTop: '1px solid var(--border-subtle)' }}>
+          <p className="text-[10px] md:text-xs" style={{ color: 'var(--text-muted)' }}>
+            © {new Date().getFullYear()} Global Computer Institute (GCI). All rights reserved.
           </p>
-          <div className="flex gap-5">
-            {['Privacy Policy','Terms of Use','Sitemap'].map(l => (
-              <Link key={l} href="#" className="text-xs transition-colors duration-300 hover:text-[#D4A017]" style={{ color:'var(--text-muted)' }}>{l}</Link>
+          <div className="flex gap-4 md:gap-5">
+            {['Privacy Policy', 'Terms of Use', 'Sitemap'].map(l => (
+              <Link key={l} href="#" className="text-[10px] md:text-xs transition-colors duration-300 hover:text-[#D4A017]" style={{ color: 'var(--text-muted)' }}>{l}</Link>
             ))}
           </div>
         </div>

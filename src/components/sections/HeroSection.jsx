@@ -94,7 +94,7 @@ export default function HeroSection() {
       <div ref={glowRef} className="absolute top-1/3 right-1/4 w-[600px] h-[600px] rounded-full z-10 pointer-events-none"
         style={{ background:'radial-gradient(circle, rgba(212,160,23,0.18) 0%, transparent 65%)', opacity:0.06 }} />
 
-      {/* Content */}
+      {/* Content - Responsive */}
       <div className="absolute inset-0 z-20 flex items-center">
         <div className="w-full max-w-7xl mx-auto px-5 sm:px-6 md:px-16">
           <div ref={contentRef} className="max-w-3xl">
@@ -104,20 +104,23 @@ export default function HeroSection() {
                   <span className="w-1.5 h-1.5 rounded-full bg-[#F5C842] animate-pulse" />
                   <span className="line-clamp-1">{slide.badge}</span>
                 </div>
+                
                 <h1 data-slide-el className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black leading-[1.1] text-white mb-1 sm:mb-2 gsap-hidden">
                   {slide.title}
                 </h1>
                 <h1 data-slide-el className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black leading-[1.1] text-gold-gradient mb-3 sm:mb-5 gsap-hidden">
                   {slide.highlight}
                 </h1>
-                <p data-slide-el className="text-white/70 text-sm sm:text-base md:text-lg leading-relaxed max-w-xl mb-6 sm:mb-8 gsap-hidden">
+                
+                <p data-slide-el className="text-white/70 text-sm sm:text-base md:text-lg leading-relaxed max-w-xl mb-6 sm:mb-8 line-clamp-3 sm:line-clamp-none gsap-hidden">
                   {slide.description}
                 </p>
+                
                 <div data-slide-el className="flex flex-col sm:flex-row gap-3 sm:gap-3 gsap-hidden">
-                  <a href={slide.primaryBtn.href} className="inline-flex items-center justify-center gap-2 bg-gold-gradient text-black font-bold px-5 sm:px-8 py-2.5 sm:py-3.5 rounded-full text-xs sm:text-sm transition-transform duration-200 hover:scale-105 hover:-translate-y-0.5 active:scale-95" style={{ boxShadow:'var(--shadow-gold)' }}>
+                  <a href={slide.primaryBtn.href} className="inline-flex items-center justify-center gap-2 bg-gold-gradient text-black font-bold px-5 sm:px-8 py-2.5 sm:py-3.5 rounded-full text-xs sm:text-sm transition-transform duration-200 hover:scale-105 hover:-translate-y-0.5 active:scale-95 w-full sm:w-auto" style={{ boxShadow:'var(--shadow-gold)' }}>
                     <slide.primaryBtn.Icon size={14} />{slide.primaryBtn.label}
                   </a>
-                  <a href={slide.secondaryBtn.href} className="inline-flex items-center justify-center gap-2 border-2 border-white/35 text-white hover:border-[#F5C842] hover:text-[#F5C842] font-semibold px-5 sm:px-8 py-2.5 sm:py-3.5 rounded-full text-xs sm:text-sm transition-all duration-300">
+                  <a href={slide.secondaryBtn.href} className="inline-flex items-center justify-center gap-2 border-2 border-white/35 text-white hover:border-[#F5C842] hover:text-[#F5C842] font-semibold px-5 sm:px-8 py-2.5 sm:py-3.5 rounded-full text-xs sm:text-sm transition-all duration-300 w-full sm:w-auto">
                     <slide.secondaryBtn.Icon size={13} />{slide.secondaryBtn.label}
                   </a>
                 </div>
@@ -145,7 +148,7 @@ export default function HeroSection() {
         ))}
       </div>
 
-      {/* Stats Bar - Responsive */}
+      {/* Stats Bar - Fixed gap removed, numbers visible */}
       <div ref={statsRef} className="absolute bottom-0 left-0 right-0 z-20 bg-black/65 backdrop-blur-xl border-t border-[#D4A017]/15">
         <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4">
           {HERO_STATS.map((stat, i) => (

@@ -5,7 +5,6 @@ import { useRef, useEffect } from 'react';
 import { Clock, Users, BarChart3, Calendar, CheckCircle, ArrowRight, Wrench, GraduationCap, ChevronLeft, Star, Briefcase, Award } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
-import { FACULTY } from '@/lib/data';
 import { getIcon } from '@/lib/icons';
 import { gsap, ScrollTrigger } from '@/lib/gsap';
 
@@ -22,8 +21,6 @@ const BADGE_COLORS = {
 
 export default function CourseDetailClient({ course }) {
   const Icon = getIcon(course.iconName);
-  const instructor    = FACULTY.find(f => f.id === course.instructorId)    || null;
-  const coInstructor  = FACULTY.find(f => f.id === course.coInstructorId) || null;
   const badge = BADGE_COLORS[course.badgeColor] || BADGE_COLORS.gold;
   const contentRef = useRef(null);
   const sidebarRef = useRef(null);
@@ -189,59 +186,6 @@ export default function CourseDetailClient({ course }) {
                   ))}
                 </div>
               </div>
-              {/* Instructor(s) */}
-              {instructor && (
-                <div data-section className="gsap-hidden">
-                  <h2 className="font-display font-bold text-2xl mb-4" style={{ color:'var(--text-primary)' }}>
-                    {coInstructor ? 'Your Instructors' : 'Your Instructor'}
-                  </h2>
-                  <div className="w-14 h-0.5 bg-gold-gradient rounded-full mb-6" />
-                  <div className="space-y-4">
-                    {[instructor, coInstructor].filter(Boolean).map((inst) => (
-                      <Link
-                        key={inst.id}
-                        href={`/faculty/${inst.id}`}
-                        className="group flex items-start gap-5 p-5 rounded-2xl border transition-all duration-200 hover:-translate-y-0.5"
-                        style={{ backgroundColor:'var(--bg-card)', borderColor:'var(--border-subtle)' }}
-                        onMouseEnter={e=>{ e.currentTarget.style.borderColor='var(--border-gold)'; e.currentTarget.style.boxShadow='var(--shadow-card)'; }}
-                        onMouseLeave={e=>{ e.currentTarget.style.borderColor='var(--border-subtle)'; e.currentTarget.style.boxShadow='none'; }}
-                      >
-                        {/* Photo */}
-                        <div className="relative w-16 h-16 rounded-2xl overflow-hidden flex-shrink-0 border-2"
-                          style={{ borderColor:'rgba(212,160,23,0.35)' }}>
-                          {inst.image ? (
-                            <Image
-                              src={inst.image} alt={inst.name} fill quality={80}
-                              className="object-cover object-top"
-                              sizes="64px"
-                            />
-                          ) : (
-                            <div className={`w-full h-full flex items-center justify-center font-display font-black text-xl text-[#F5C842] bg-gradient-to-br ${inst.bg}`}>
-                              {inst.initials}
-                            </div>
-                          )}
-                        </div>
-                        {/* Info */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-2 flex-wrap mb-0.5">
-                            <h4 className="font-display font-bold text-base group-hover:text-[#F5C842] transition-colors"
-                              style={{ color:'var(--text-primary)' }}>{inst.name}</h4>
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0"
-                              style={{ background:'rgba(212,160,23,0.12)', color:'#D4A017', border:'1px solid rgba(212,160,23,0.25)' }}>
-                              View Profile →
-                            </span>
-                          </div>
-                          <p className="text-xs font-semibold text-[#D4A017] mb-1">{inst.role}</p>
-                          <p className="text-[10px] mb-2" style={{ color:'var(--text-muted)' }}>{inst.exp}</p>
-                          <p className="text-sm leading-relaxed line-clamp-2" style={{ color:'var(--text-secondary)' }}>
-                            {inst.bio || `${inst.name.split(' ')[0]} brings hands-on industry experience and real-world projects directly into the classroom.`}
-                          </p>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* Sidebar */}
