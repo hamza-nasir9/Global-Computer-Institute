@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { ZoomIn, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import SectionHeader from '@/components/ui/SectionHeader';
 import { GALLERY_ITEMS } from '@/lib/data';
@@ -90,15 +91,15 @@ export default function GallerySection() {
           ))}
         </div>
         
-        {/* View Full Gallery Button */}
+        {/* ✅ View Full Gallery Button - Link to /gallery page */}
         <div className="text-center mt-8 md:mt-10">
-          <a
+          <Link
             href="/gallery"
             className="inline-flex items-center gap-2 text-sm border px-5 md:px-6 py-2 md:py-3 rounded-full transition-all duration-300 hover:text-[#F5C842] hover:border-[#D4A017]/40"
             style={{ color: 'var(--text-secondary)', borderColor: 'var(--border-medium)' }}
           >
             View Full Gallery
-          </a>
+          </Link>
         </div>
       </div>
 

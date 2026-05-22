@@ -8,7 +8,7 @@ const FOOTER_LINKS = {
   Students: ['Admissions','Fee Structure','Scholarships','Student Portal','Library','Internships','Alumni Network','FAQs'],
 };
 
-// ✅ Updated Campus Addresses (As per your image)
+// Updated Campus Addresses
 const CAMPUSES_INFO = [
   { name: 'Saudabad Campus', addr: 'Plot# A-22 Indus Mehran Society, Near 1st P.S.O Petrol Pump, Saudabad Malir, Karachi-75080', phone: '0333-3580212, 0313-2246517' },
   { name: 'Model Colony Campus', addr: 'Near Railway Crossing, Rabbani Masjid, Model Colony, Karachi', phone: '0322-2511944, 0318-2511944' },
@@ -25,7 +25,7 @@ export default function Footer() {
     <footer id="contact" style={{ backgroundColor: 'var(--bg-primary)', borderTop: '1px solid var(--border-gold)' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-16 pt-12 md:pt-16 pb-6 md:pb-8">
         
-        {/* Main Footer Grid - Responsive */}
+        {/* Main Footer Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 md:gap-10 mb-8 md:mb-14">
           
           {/* Logo & Info Section */}
@@ -41,7 +41,7 @@ export default function Footer() {
               Karachi's premier technology institute, shaping the next generation of digital professionals since 2005. Three campuses, 50+ programs, 15,000+ alumni.
             </p>
             
-            {/* ✅ Updated Contact Info */}
+            {/* Contact Info with Icons - No Emojis */}
             <div className="space-y-2 md:space-y-3 mb-4 md:mb-6">
               <div className="flex items-start gap-2 text-xs md:text-sm" style={{ color: 'var(--text-secondary)' }}>
                 <MapPin size={14} className="text-[#D4A017] mt-0.5 flex-shrink-0" />
@@ -57,7 +57,7 @@ export default function Footer() {
               </div>
             </div>
             
-            {/* Social Icons - Responsive */}
+            {/* Social Icons */}
             <div className="flex gap-2 flex-wrap">
               {SOCIALS.map(({ Icon, href }, i) => (
                 <a key={i} href={href}
@@ -94,7 +94,7 @@ export default function Footer() {
           ))}
         </div>
 
-        {/* Campus Cards - Responsive Grid */}
+        {/* Campus Cards - Icons only, no emojis */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 mb-8 md:mb-10">
           {CAMPUSES_INFO.map(c => (
             <div key={c.name} className="glass rounded-xl p-3 md:p-4 flex flex-col gap-2" style={{ borderColor: 'var(--border-medium)' }}>
@@ -103,14 +103,17 @@ export default function Footer() {
                 <div>
                   <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{c.name}</p>
                   <p className="text-[10px] md:text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{c.addr}</p>
-                  <p className="text-[9px] md:text-[10px] mt-1 text-[#D4A017]" style={{ color: '#D4A017' }}>📞 {c.phone}</p>
+                  <div className="flex items-center gap-1 mt-1">
+                    <Phone size={10} className="text-[#D4A017]" />
+                    <p className="text-[9px] md:text-[10px] text-[#D4A017]">{c.phone}</p>
+                  </div>
                 </div>
               </div>
             </div>
           ))}
         </div>
 
-        {/* Copyright Section - Responsive */}
+        {/* Copyright Section */}
         <div className="pt-4 md:pt-6 flex flex-col md:flex-row items-center justify-between gap-3 text-center md:text-left" style={{ borderTop: '1px solid var(--border-subtle)' }}>
           <p className="text-[10px] md:text-xs" style={{ color: 'var(--text-muted)' }}>
             © {new Date().getFullYear()} Global Computer Institute (GCI). All rights reserved.
