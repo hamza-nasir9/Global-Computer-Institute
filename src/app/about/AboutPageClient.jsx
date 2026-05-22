@@ -230,7 +230,7 @@ export default function AboutPageClient() {
                       {/* CEO image — place your photo at /public/images/ceo.jpg */}
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
-                        src="/images/ceo.jpg"
+                        src="/images/ceo.jpeg"
                         alt="Faheem Ahmed — Director, Global Computer Institute"
                         className="w-full h-full object-cover object-center"
                         onError={(e) => {
@@ -323,12 +323,12 @@ export default function AboutPageClient() {
                   <div className="mt-6 pt-5 border-t" style={{ borderColor: 'var(--border-subtle)' }}>
                     <p className="text-xs mb-2" style={{ color: 'var(--text-muted)' }}>With warm regards,</p>
                     {/* Stylised SVG signature */}
-                    <svg viewBox="0 0 140 48" width="140" height="48" fill="none" aria-hidden="true">
+                    {/* <svg viewBox="0 0 140 48" width="140" height="48" fill="none" aria-hidden="true">
                       <path d="M5 38 Q15 8 28 26 Q40 42 55 22 Q68 6 82 24 Q94 38 108 26 Q118 18 130 28"
                         stroke="#D4A017" strokeWidth="2" strokeLinecap="round" />
                       <path d="M8 42 Q40 34 75 40 Q100 44 128 36"
                         stroke="rgba(212,160,23,0.25)" strokeWidth="1" strokeLinecap="round" />
-                    </svg>
+                    </svg> */}
                     <p className="font-display font-bold text-base mt-1" style={{ color: 'var(--text-primary)' }}>Faheem Ahmed</p>
                     <p className="text-xs font-semibold" style={{ color: '#D4A017' }}>Director, Global Computer Institute</p>
                   </div>
