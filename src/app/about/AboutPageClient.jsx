@@ -76,7 +76,7 @@ export default function AboutPageClient() {
                 Twenty years later, that vision has produced over 15,000 graduates working at Google, Microsoft, Gaditek, Systems Ltd, and hundreds of startups worldwide.
               </p>
               <div className="grid grid-cols-3 gap-4">
-                {[{v:'20+',l:'Years'},{v:'15k+',l:'Alumni'},{v:'3',l:'Campuses'}].map((s,i) => (
+                {[{v:'20+',l:'Years'},{v:'1.5k+',l:'Alumni'},{v:'3',l:'Campuses'}].map((s,i) => (
                   <div key={i} className="text-center p-4 rounded-xl border" style={{ backgroundColor:'var(--bg-card)', borderColor:'var(--border-gold)' }}>
                     <div className="font-display text-2xl font-black text-[#F5C842]">{s.v}</div>
                     <div className="text-xs mt-1" style={{ color:'var(--text-muted)' }}>{s.l}</div>
@@ -135,7 +135,7 @@ export default function AboutPageClient() {
         </section>
 
         {/* Milestones */}
-        <section className="py-12 md:py-24 px-4 md:px-16" style={{ backgroundColor:'var(--bg-primary)' }}>
+        {/* <section className="py-12 md:py-24 px-4 md:px-16" style={{ backgroundColor:'var(--bg-primary)' }}>
           <div className="max-w-5xl mx-auto">
             <SectionHeader label="Our Journey" title="Two Decades of" highlight="Milestones" center />
             <div ref={timelineRef} className="relative">
@@ -162,32 +162,9 @@ export default function AboutPageClient() {
               })}
             </div>
           </div>
-        </section>
+        </section> */}
 
-        {/* Why us */}
-        <section className="py-12 md:py-24 px-4 md:px-16" style={{ backgroundColor:'var(--bg-section)' }}>
-          <div className="max-w-7xl mx-auto">
-            <SectionHeader label="Why GCI" title="Why Students Choose" highlight="Us" center />
-            <div ref={whyRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {WHY_FEATURES.map((f,i)=>{
-                const Icon=getIcon(f.iconName);
-                return (
-                  <div key={i} className="group rounded-2xl p-7 border text-center transition-all duration-300 hover:-translate-y-2"
-                    style={{ backgroundColor:'var(--bg-card)', borderColor:'var(--border-subtle)'}}
-                    onMouseEnter={e=>{ e.currentTarget.style.borderColor='var(--border-gold)'; e.currentTarget.style.boxShadow='var(--shadow-card)'; }}
-                    onMouseLeave={e=>{ e.currentTarget.style.borderColor='var(--border-subtle)'; e.currentTarget.style.boxShadow='none'; }}>
-                    <div className="w-14 h-14 rounded-full mx-auto mb-5 flex items-center justify-center border-2 transition-all duration-300 group-hover:border-[#D4A017]/50 group-hover:scale-110"
-                      style={{ background:'linear-gradient(135deg,rgba(212,160,23,0.15),rgba(212,160,23,0.04))', borderColor:'rgba(212,160,23,0.20)' }}>
-                      <Icon size={24} className="text-[#D4A017] group-hover:text-[#F5C842] transition-colors" />
-                    </div>
-                    <h3 className="font-display font-bold text-base mb-2 group-hover:text-[#F5C842] transition-colors" style={{ color:'var(--text-primary)' }}>{f.title}</h3>
-                    <p className="text-sm leading-relaxed" style={{ color:'var(--text-secondary)' }}>{f.description}</p>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </section>
+      
 
         {/* Vision image break */}
         <section className="relative h-72 overflow-hidden">
@@ -198,7 +175,7 @@ export default function AboutPageClient() {
               <p className="font-display text-2xl md:text-3xl font-bold text-white mb-4 max-w-2xl">
                 &ldquo;We don&apos;t just teach technology — we build <span className="text-gold-gradient">careers that last a lifetime.</span>&rdquo;
               </p>
-              <p className="text-white/60 text-sm">— Dr. Arif Mahmood, Founder &amp; Director, GCI</p>
+              <p className="text-white/60 text-sm">— Faheem Ahmed, Founder &amp; Director, GCI</p>
             </div>
           </div>
         </section>
@@ -261,7 +238,7 @@ export default function AboutPageClient() {
 
                   {/* Social-style stats */}
                   <div className="flex gap-5 mt-5">
-                    {[{ n: '20+', l: 'Years' }, { n: '3', l: 'Campuses' }, { n: '15K+', l: 'Alumni' }].map(({ n, l }) => (
+                    {[{ n: '20+', l: 'Years' }, { n: '3', l: 'Campuses' }, { n: '1.5K+', l: 'Alumni' }].map(({ n, l }) => (
                       <div key={l} className="text-center">
                         <div className="font-display font-black text-base text-[#F5C842]">{n}</div>
                         <div className="text-[9px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>{l}</div>
@@ -338,6 +315,7 @@ export default function AboutPageClient() {
           </div>
         </section>
 
+
         {/* Faculty */}
         <section className="py-12 md:py-24 px-4 md:px-16" style={{ backgroundColor:'var(--bg-primary)' }}>
           <div className="max-w-7xl mx-auto">
@@ -358,6 +336,32 @@ export default function AboutPageClient() {
             </div>
           </div>
         </section>
+
+  {/* Why us */}
+        <section className="py-12 md:py-24 px-4 md:px-16" style={{ backgroundColor:'var(--bg-section)' }}>
+          <div className="max-w-7xl mx-auto">
+            <SectionHeader label="Why GCI" title="Why Students Choose" highlight="Us" center />
+            <div ref={whyRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {WHY_FEATURES.map((f,i)=>{
+                const Icon=getIcon(f.iconName);
+                return (
+                  <div key={i} className="group rounded-2xl p-7 border text-center transition-all duration-300 hover:-translate-y-2"
+                    style={{ backgroundColor:'var(--bg-card)', borderColor:'var(--border-subtle)'}}
+                    onMouseEnter={e=>{ e.currentTarget.style.borderColor='var(--border-gold)'; e.currentTarget.style.boxShadow='var(--shadow-card)'; }}
+                    onMouseLeave={e=>{ e.currentTarget.style.borderColor='var(--border-subtle)'; e.currentTarget.style.boxShadow='none'; }}>
+                    <div className="w-14 h-14 rounded-full mx-auto mb-5 flex items-center justify-center border-2 transition-all duration-300 group-hover:border-[#D4A017]/50 group-hover:scale-110"
+                      style={{ background:'linear-gradient(135deg,rgba(212,160,23,0.15),rgba(212,160,23,0.04))', borderColor:'rgba(212,160,23,0.20)' }}>
+                      <Icon size={24} className="text-[#D4A017] group-hover:text-[#F5C842] transition-colors" />
+                    </div>
+                    <h3 className="font-display font-bold text-base mb-2 group-hover:text-[#F5C842] transition-colors" style={{ color:'var(--text-primary)' }}>{f.title}</h3>
+                    <p className="text-sm leading-relaxed" style={{ color:'var(--text-secondary)' }}>{f.description}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
 
         {/* CTA */}
         <section className="py-10 md:py-20 px-4 md:px-16 text-center" style={{ backgroundColor:'var(--bg-section)' }}>

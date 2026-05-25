@@ -17,8 +17,8 @@ const SLIDES = [
     primaryBtn:{ label:'Our Campuses', href:'/campuses', Icon:MapPin }, secondaryBtn:{ label:'Our Story', href:'/about', Icon:ArrowRight } },
 ];
 const HERO_STATS = [
-  { value:'15,000+', label:'Alumni Placed' },
-  { value:'50+',     label:'Programs' },
+  { value:'15,00+', label:'Alumni Placed' },
+  { value:'20+',     label:'Programs' },
   { value:'98%',     label:'Placement Rate' },
   { value:'3',       label:'Campuses' },
 ];

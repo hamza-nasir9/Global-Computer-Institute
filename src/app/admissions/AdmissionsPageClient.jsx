@@ -162,7 +162,7 @@ export default function AdmissionsPageClient() {
             <SectionHeader label="Upcoming Batches" title="Available" highlight="Schedule" center />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {[
-                { shift:'Morning Batch', time:'9:00 AM – 1:00 PM', days:'Monday – Friday', seats:'25 seats', start:'Feb 15, 2025' },
+                // { shift:'Morning Batch', time:'9:00 AM – 1:00 PM', days:'Monday – Friday', seats:'25 seats', start:'Feb 15, 2025' },
                 { shift:'Evening Batch', time:'2:00 PM – 6:00 PM', days:'Monday – Friday', seats:'25 seats', start:'Feb 15, 2025' },
                 { shift:'Weekend Batch', time:'9:00 AM – 5:00 PM', days:'Saturday – Sunday', seats:'20 seats', start:'Feb 22, 2025' },
               ].map((b, i) => (

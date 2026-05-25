@@ -1,5 +1,6 @@
 'use client';
 import { useRef, useEffect } from 'react';
+import Link from 'next/link';
 import { Phone } from 'lucide-react';
 import SectionHeader from '@/components/ui/SectionHeader';
 import { WHY_FEATURES } from '@/lib/data';
@@ -62,7 +63,7 @@ export default function WhyChooseUs() {
           })}
         </div>
 
-        {/* CTA Section - Responsive Buttons */}
+        {/* CTA Section - Using Next.js Link for client-side navigation */}
         <div ref={ctaRef} className="mt-10 md:mt-14 rounded-2xl border p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-5 md:gap-6"
           style={{ background:'linear-gradient(135deg,var(--bg-card),var(--bg-card-hover))', borderColor:'var(--border-gold)'}}>
           
@@ -72,18 +73,18 @@ export default function WhyChooseUs() {
             <p className="text-xs md:text-sm" style={{ color:'var(--text-secondary)' }}>Admissions are open. Limited seats available for Spring 2025 batch.</p>
           </div>
           
-          {/* Buttons Section - Stack on Mobile */}
+          {/* Buttons Section - Using Link instead of a tag */}
           <div className="flex flex-col sm:flex-row gap-3 flex-shrink-0 w-full sm:w-auto">
-            <a href="/admissions" 
+            <Link href="/admission-form" 
               className="bg-gold-gradient text-black font-bold px-5 md:px-7 py-2.5 md:py-3 rounded-full text-xs md:text-sm transition-transform duration-200 hover:scale-105 hover:-translate-y-0.5 active:scale-95 text-center w-full sm:w-auto" 
               style={{ boxShadow:'var(--shadow-gold-sm)' }}>
               Apply Now
-            </a>
-            <a href="tel:+922111524786" 
+            </Link>
+            <Link href="/contact" 
               className="inline-flex items-center justify-center gap-2 border font-semibold px-5 md:px-7 py-2.5 md:py-3 rounded-full text-xs md:text-sm transition-all duration-300 hover:border-[#D4A017]/50 w-full sm:w-auto"
               style={{ borderColor:'var(--border-medium)', color:'var(--text-primary)' }}>
-              <Phone size={14} />Call Us
-            </a>
+              <Phone size={14} />Contact Us
+            </Link>
           </div>
         </div>
       </div>
