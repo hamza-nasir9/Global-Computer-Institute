@@ -4,7 +4,7 @@ import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { useAuth } from '@/context/AuthContext';
 import { saveStudent } from '@/lib/studentStore';
-import { AlertCircle, CheckCircle, Lock, ArrowRight, Camera, Upload } from 'lucide-react';
+import { AlertCircle, CheckCircle, ArrowRight, Camera, Upload } from 'lucide-react';
 import Link from 'next/link';
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -89,6 +89,7 @@ export default function AdmissionFormClient() {
   /* ── State ── */
   const [submitted, setSubmitted] = useState(false);
   const [submittedId, setSubmittedId] = useState(null);
+  const [submittedTrackingId, setSubmittedTrackingId] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
   const [othersText, setOthersText] = useState('');
@@ -261,6 +262,9 @@ export default function AdmissionFormClient() {
         }
 
         savedId = data.admission?._id || data.admission?.id || savedId;
+        if (data.admission?.trackingId) {
+          setSubmittedTrackingId(data.admission.trackingId);
+        }
         apiSuccess = true;
       } catch (networkErr) {
         console.warn('[admission] API unavailable, saving locally only:', networkErr.message);
@@ -291,75 +295,93 @@ export default function AdmissionFormClient() {
   const sectionHeadBg = 'linear-gradient(135deg,#D4A017,#F5C842)';
   const cardBg = 'var(--bg-card)';
 
+  /* Loading spinner while auth resolves — very brief, prevents flash */
   if (authLoading) return (
     <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--bg-primary)' }}>
       <span className="w-8 h-8 border-2 border-[#D4A017]/30 border-t-[#D4A017] rounded-full animate-spin" />
     </div>
   );
 
-  if (!user) return (
-    <>
-      <Navbar />
-      <main className="min-h-screen flex items-center justify-center px-4 pt-24 pb-16" style={{ backgroundColor: 'var(--bg-primary)' }}>
-        <div className="max-w-md w-full text-center">
-          <div className="w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center"
-            style={{ background: 'rgba(212,160,23,0.12)', border: '2px solid rgba(212,160,23,0.30)' }}>
-            <Lock size={36} className="text-[#D4A017]" />
-          </div>
-          <h1 className="font-display text-3xl font-bold mb-3" style={{ color: 'var(--text-primary)' }}>Login Required</h1>
-          <p className="text-sm leading-relaxed mb-8" style={{ color: 'var(--text-secondary)' }}>
-            You must be logged in to submit an admission application.
-          </p>
-          <div className="flex gap-3 justify-center flex-wrap">
-            <Link href="/auth/login?redirect=/admission-form"
-              className="inline-flex items-center gap-2 bg-gold-gradient text-black font-bold px-7 py-3 rounded-full text-sm"
-              style={{ boxShadow: 'var(--shadow-gold-sm)' }}>
-              <ArrowRight size={15} />Sign In to Continue
-            </Link>
-            <Link href="/auth/register"
-              className="inline-flex items-center gap-2 border font-semibold px-7 py-3 rounded-full text-sm"
-              style={{ borderColor: 'var(--border-gold)', color: 'var(--text-primary)' }}>
-              Create Account
-            </Link>
-          </div>
-        </div>
-      </main>
-      <Footer />
-    </>
-  );
-
+  /* ── Success screen — shown after form submission ── */
   if (submitted) return (
     <>
       <Navbar />
       <main className="min-h-screen flex items-center justify-center px-4 pt-24 pb-16" style={{ backgroundColor: 'var(--bg-primary)' }}>
-        <div className="max-w-md w-full text-center">
-          <div className="w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center"
-            style={{ background: 'rgba(212,160,23,0.15)', border: '2px solid rgba(212,160,23,0.4)' }}>
-            <CheckCircle size={40} className="text-[#D4A017]" />
+        <div className="max-w-lg w-full rounded-3xl border overflow-hidden"
+          style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-gold)', boxShadow: 'var(--shadow-card)' }}>
+
+          {/* ── Step 1: Tracking ID ── */}
+          <div className="px-8 pt-8 pb-6 text-center border-b" style={{ borderColor: 'var(--border-subtle)' }}>
+            <div className="w-20 h-20 rounded-full mx-auto mb-5 flex items-center justify-center"
+              style={{ background: 'rgba(212,160,23,0.15)', border: '2px solid rgba(212,160,23,0.4)' }}>
+              <CheckCircle size={40} className="text-[#D4A017]" />
+            </div>
+            <h1 className="font-display text-2xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>
+              Application Submitted!
+            </h1>
+            <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+              Your admission form has been saved successfully.
+            </p>
           </div>
-          <h1 className="font-display text-3xl font-bold mb-3" style={{ color: 'var(--text-primary)' }}>
-            Application Submitted!
-          </h1>
-          <p className="text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>
-            Your admission application has been received successfully.
-            Our team will contact you within 24 hours.
-          </p>
-          <p className="text-xs mb-8 font-mono px-3 py-1.5 rounded-lg inline-block"
-            style={{ backgroundColor: 'var(--bg-card)', color: '#D4A017', border: '1px solid var(--border-gold)' }}>
-            Application ID: GCI-{String(submittedId).slice(-12)}
-          </p>
-          <div className="flex gap-3 justify-center flex-wrap">
-            <Link href="/dashboard/student?tab=admission"
-              className="inline-flex items-center gap-2 bg-gold-gradient text-black font-bold px-7 py-3 rounded-full text-sm"
-              style={{ boxShadow: 'var(--shadow-gold-sm)' }}>
-              View My Application
-            </Link>
-            <Link href="/"
-              className="inline-flex items-center gap-2 border font-semibold px-7 py-3 rounded-full text-sm"
-              style={{ borderColor: 'var(--border-gold)', color: 'var(--text-primary)' }}>
-              Back to Home
-            </Link>
+
+          {/* Tracking ID block */}
+          <div className="px-8 py-6 text-center" style={{ backgroundColor: 'rgba(212,160,23,0.04)' }}>
+            <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: 'var(--text-muted)' }}>
+              Your Tracking ID
+            </p>
+            <div className="inline-block px-6 py-3 rounded-2xl border-2 mb-3"
+              style={{ borderColor: 'var(--border-gold)', backgroundColor: 'rgba(212,160,23,0.08)' }}>
+              <span className="font-mono font-black text-2xl tracking-widest" style={{ color: '#F5C842' }}>
+                {submittedTrackingId || `GCI-${new Date().getFullYear()}-${String(submittedId).slice(-6).toUpperCase()}`}
+              </span>
+            </div>
+            <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+              Please <strong style={{ color: 'var(--text-primary)' }}>save this Tracking ID</strong> — you will use it to check your application status after logging in.
+            </p>
           </div>
+
+          {/* ── Step 2: Register / Login prompt (only for guests) ── */}
+          {!user ? (
+            <div className="px-8 py-6 border-t" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-input)' }}>
+              <div className="flex items-start gap-3 mb-4">
+                <div className="w-8 h-8 rounded-full bg-gold-gradient flex-shrink-0 flex items-center justify-center text-black font-black text-sm mt-0.5">2</div>
+                <div>
+                  <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>Create your account to track status</p>
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>
+                    Register with the same email to access the Tracking ID page and monitor your application.
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Link
+                  href={`/auth/register?from=admission&tid=${encodeURIComponent(submittedTrackingId || '')}`}
+                  className="flex-1 flex items-center justify-center gap-2 bg-gold-gradient text-black font-bold px-5 py-3 rounded-full text-sm"
+                  style={{ boxShadow: 'var(--shadow-gold-sm)' }}>
+                  <ArrowRight size={15} />Create Account
+                </Link>
+                <Link
+                  href={`/auth/login?redirect=/track`}
+                  className="flex-1 flex items-center justify-center gap-2 border font-semibold px-5 py-3 rounded-full text-sm"
+                  style={{ borderColor: 'var(--border-gold)', color: 'var(--text-primary)' }}>
+                  Already have an account
+                </Link>
+              </div>
+            </div>
+          ) : (
+            /* Already logged in — go straight to track */
+            <div className="px-8 pb-8 pt-5 flex flex-col sm:flex-row gap-3">
+              <Link href="/track"
+                className="flex-1 flex items-center justify-center gap-2 bg-gold-gradient text-black font-bold px-5 py-3 rounded-full text-sm"
+                style={{ boxShadow: 'var(--shadow-gold-sm)' }}>
+                Check Application Status
+              </Link>
+              <Link href="/"
+                className="flex-1 flex items-center justify-center gap-2 border font-semibold px-5 py-3 rounded-full text-sm"
+                style={{ borderColor: 'var(--border-gold)', color: 'var(--text-primary)' }}>
+                Back to Home
+              </Link>
+            </div>
+          )}
         </div>
       </main>
       <Footer />
@@ -383,7 +405,9 @@ export default function AdmissionFormClient() {
               </span>
             </h1>
             <p className="text-xs md:text-sm" style={{ color: 'var(--text-secondary)' }}>
-              Logged in as <span className="text-[#D4A017] font-semibold">{user?.name || 'User'}</span>
+              {user
+                ? <>Logged in as <span className="text-[#D4A017] font-semibold">{user.name}</span></>
+                : 'Fill in the form below — no account required'}
             </p>
           </div>
 

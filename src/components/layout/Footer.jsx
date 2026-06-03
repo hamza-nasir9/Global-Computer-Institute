@@ -31,11 +31,12 @@ export default function Footer() {
           {/* Logo & Info Section */}
           <div className="lg:col-span-2">
             <Link href="/" className="flex items-center gap-3 mb-4 md:mb-5">
-              <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-gold-gradient flex items-center justify-center font-display font-black text-black text-base md:text-lg" style={{ boxShadow: 'var(--shadow-gold-sm)' }}>G</div>
-              <div>
-                <span className="font-display font-bold text-lg md:text-xl" style={{ color: 'var(--text-primary)' }}>GCI<span className="text-[#F5C842]"> Institute</span></span>
-                <p className="text-[8px] md:text-[10px] tracking-widest uppercase -mt-0.5" style={{ color: 'var(--text-muted)' }}>Global Computer Institute</p>
-              </div>
+              <img
+                src="/images/logo-light.png"
+                alt="Global Computer Institute"
+                className="h-10 w-auto object-contain"
+                style={{ filter: 'brightness(0) invert(1)' }}
+              />
             </Link>
             <p className="text-xs md:text-sm leading-relaxed mb-4 md:mb-6 max-w-sm" style={{ color: 'var(--text-secondary)' }}>
               Karachi's premier technology institute, shaping the next generation of digital professionals since 2005. Three campuses, 50+ programs, 15,000+ alumni.

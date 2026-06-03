@@ -1,7 +1,6 @@
 'use client';
 import { useEffect, useState, Suspense } from 'react';
 import { useParams } from 'next/navigation';
-import { getStudentById } from '@/lib/studentStore';
 
 function PrintPageClient() {
   const params = useParams();
@@ -13,7 +12,7 @@ function PrintPageClient() {
     if (!id) return;
 
     async function load() {
-      /* 1. Try MongoDB API first (most up-to-date data) */
+      /* Try MongoDB API first */
       try {
         const stored = typeof window !== 'undefined' ? localStorage.getItem('gci_user') : null;
         const user   = stored ? JSON.parse(stored) : null;
@@ -25,178 +24,224 @@ function PrintPageClient() {
         if (res.ok) {
           const data = await res.json();
           if (data.admission) {
-            const a = data.admission;
-            setStudent({
-              ...a,
-              id:          a._id?.toString() || a.id || id,
-              submittedAt: a.createdAt || a.submittedAt || new Date().toISOString(),
-            });
-            setTimeout(() => window.print(), 900);
+            setStudent({ ...data.admission, id: data.admission._id?.toString() || data.admission.id || id });
+            setTimeout(() => window.print(), 1200);
             return;
           }
         }
       } catch (err) {
         console.warn('[print] API lookup failed:', err.message);
       }
-
-      /* 2. Fallback: localStorage */
-      const local = getStudentById(id);
-      if (local) {
-        setStudent(local);
-        setTimeout(() => window.print(), 900);
-        return;
-      }
-
       setNotFound(true);
     }
-
     load();
   }, [params?.id]);
 
   if (notFound) return (
-    <div style={{ fontFamily: 'Arial,sans-serif', padding: 40, textAlign: 'center' }}>
-      <h2 style={{ color: '#333', marginBottom: 8 }}>Record not found.</h2>
-      <p style={{ color: '#777', fontSize: 13, marginBottom: 20 }}>The record may have been deleted or the ID is invalid.</p>
-      <button onClick={() => window.close()}
-        style={{ padding: '8px 20px', cursor: 'pointer', borderRadius: 6, border: '1px solid #ccc' }}>
-        Close
-      </button>
+    <div style={{ fontFamily:'Arial,sans-serif', padding:40, textAlign:'center' }}>
+      <h2 style={{ color:'#333', marginBottom:8 }}>Record not found.</h2>
+      <p style={{ color:'#777', fontSize:13, marginBottom:20 }}>The record may have been deleted or the ID is invalid.</p>
+      <button onClick={() => window.close()} style={{ padding:'8px 20px', cursor:'pointer', borderRadius:6, border:'1px solid #ccc' }}>Close</button>
     </div>
   );
 
   if (!student) return (
-    <div style={{ fontFamily: 'Arial,sans-serif', padding: 40, textAlign: 'center' }}>
-      <div style={{ width: 36, height: 36, border: '3px solid #D4A017', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto' }} />
-      <p style={{ marginTop: 16, color: '#666' }}>Loading…</p>
-      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+    <div style={{ fontFamily:'Arial,sans-serif', padding:40, textAlign:'center' }}>
+      <div style={{ width:36, height:36, border:'3px solid #D4A017', borderTopColor:'transparent', borderRadius:'50%', animation:'spin 0.8s linear infinite', margin:'0 auto' }} />
+      <p style={{ marginTop:16, color:'#666' }}>Loading…</p>
+      <style>{`@keyframes spin { to { transform:rotate(360deg) } }`}</style>
     </div>
   );
 
   const s = student;
-  const submittedDate = new Date(s.submittedAt || s.createdAt).toLocaleDateString('en-PK', {
-    day: '2-digit', month: 'long', year: 'numeric',
-  });
+  const submittedDate = s.createdAt || s.submittedAt
+    ? new Date(s.createdAt || s.submittedAt).toLocaleDateString('en-PK', { day:'2-digit', month:'long', year:'numeric' })
+    : '—';
 
-  /* Parse selectedCourses — can be comma-separated string or array */
   const coursesArr = Array.isArray(s.selectedCourses)
     ? s.selectedCourses
     : (s.selectedCourses || '').split(',').map(x => x.trim()).filter(Boolean);
 
-  const ALL_COURSES_LEFT = [
-    'Diploma Information Technology (DIT)',
-    'Certificate Information Technology (CIT)',
-    'Microsoft Office',
-    'Multimedia & Graphics',
-    'Web Design & Development',
-    'English Language / IELTS Preparation',
-    'Job Package',
-    'Auto Cad 2D & 3D',
-  ];
-  const ALL_COURSES_RIGHT = [
-    'Social Media Marketing',
-    'Computerized Accounting',
-    'Computer Hardware & Networking',
-    'Computer Languages C++ PHP',
-    'Freelancing Career',
-    'School Teaching Course / Summer Camp',
-  ];
+  const ALL_LEFT  = ['Diploma Information Technology (DIT)','Certificate Information Technology (CIT)','Microsoft Office','Multimedia & Graphics','Web Design & Development','English Language / IELTS Preparation','Job Package','Auto Cad 2D & 3D'];
+  const ALL_RIGHT = ['Social Media Marketing','Computerized Accounting','Computer Hardware & Networking','Computer Languages C++ PHP','Freelancing Career','School Teaching Course / Summer Camp'];
 
-  /* Resolve image: filesystem path (/uploads/...) or base64 data-URL */
-  const photoSrc = s.image || null;
+  const isChecked = (course) => coursesArr.some(c => c.toLowerCase().includes(course.toLowerCase().slice(0, 10)));
 
   return (
     <>
       <style>{`
         *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family:'Segoe UI',Arial,sans-serif; background:#f5f5f5; color:#111; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-        .page { background:#fff; max-width:820px; margin:20px auto; border-radius:10px; overflow:hidden; box-shadow:0 4px 24px rgba(0,0,0,.12); }
-        .header { background:linear-gradient(135deg,#D4A017 0%,#F5C842 100%); padding:14px 28px; display:flex; align-items:center; justify-content:space-between; }
-        .logo-text h1 { font-size:26px; font-weight:900; color:#000; letter-spacing:-1px; }
-        .logo-text p { font-size:13px; font-weight:700; color:#000; }
-        .logo-text small { font-size:10px; color:rgba(0,0,0,.6); }
-        .admit-badge { background:#000; color:#F5C842; font-weight:900; font-size:12px; padding:6px 14px; border-radius:6px; letter-spacing:.05em; text-align:center; }
-        .body { padding:20px 28px; }
-        .reg-photo-row { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:14px; gap:16px; }
-        .reg-section { flex:1; }
-        .reg-boxes { display:flex; gap:3px; margin-top:4px; }
-        .reg-box { width:26px; height:28px; border:1.5px solid #aaa; border-radius:3px; font-size:11px; display:flex; align-items:center; justify-content:center; font-weight:700; background:#f9f9f9; }
-        .photo-box { width:88px; height:106px; border:2px solid #D4A017; border-radius:6px; display:flex; flex-direction:column; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden; background:#f9f9f9; }
+        html, body { width:100%; height:100%; }
+        body {
+          font-family:'Segoe UI',Arial,sans-serif;
+          background:#f0f0f0;
+          color:#111;
+          -webkit-print-color-adjust:exact;
+          print-color-adjust:exact;
+          color-adjust:exact;
+        }
+
+        /* ── Screen wrapper ── */
+        .page-wrap {
+          background:#fff;
+          max-width:800px;
+          margin:20px auto;
+          border-radius:10px;
+          overflow:hidden;
+          box-shadow:0 4px 28px rgba(0,0,0,.14);
+        }
+
+        /* ── Toolbar (screen only) ── */
+        .toolbar {
+          background:#0a0a0a;
+          padding:10px 20px;
+          display:flex;
+          align-items:center;
+          justify-content:space-between;
+          position:sticky;
+          top:0;
+          z-index:50;
+          border-radius:10px 10px 0 0;
+        }
+        .toolbar-title { color:#fff; font-size:13px; font-weight:600; display:flex; align-items:center; gap:10px; }
+        .toolbar-badge { width:30px; height:30px; border-radius:8px; background:linear-gradient(135deg,#D4A017,#F5C842); display:flex; align-items:center; justify-content:center; font-weight:900; color:#000; font-size:16px; }
+        .toolbar-btns { display:flex; gap:10px; }
+        .btn-print { background:linear-gradient(135deg,#D4A017,#F5C842); color:#000; border:none; padding:7px 18px; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; }
+        .btn-close { background:transparent; color:rgba(255,255,255,.6); border:1px solid rgba(255,255,255,.15); padding:7px 14px; border-radius:8px; font-size:12px; cursor:pointer; }
+
+        /* ── Document body ── */
+        .doc { padding:18px 26px 16px; }
+
+        /* Header */
+        .hdr { background:linear-gradient(135deg,#D4A017,#F5C842); padding:13px 24px; display:flex; align-items:center; justify-content:space-between; }
+        .hdr-title h1 { font-size:21px; font-weight:900; color:#000; letter-spacing:-.5px; line-height:1.1; }
+        .hdr-title p  { font-size:11px; font-weight:700; color:rgba(0,0,0,.65); }
+        .admit-badge { background:#000; color:#F5C842; font-weight:900; font-size:11px; padding:6px 12px; border-radius:5px; letter-spacing:.05em; text-align:center; line-height:1.4; }
+
+        /* Tracking ID bar */
+        .tracking-bar { background:#0a0a0a; color:#F5C842; padding:5px 24px; font-size:11px; font-weight:700; font-family:monospace; letter-spacing:.08em; display:flex; align-items:center; gap:10px; }
+        .tracking-bar span { color:rgba(255,255,255,.45); font-weight:400; }
+
+        /* Photo + reg row */
+        .top-row { display:flex; gap:14px; align-items:flex-start; margin-bottom:12px; }
+        .reg-sec { flex:1; }
+        .reg-lbl { font-size:10px; font-weight:700; color:#555; margin-bottom:3px; }
+        .reg-boxes { display:flex; gap:2px; }
+        .reg-box { width:24px; height:26px; border:1.5px solid #aaa; border-radius:2px; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; background:#f9f9f9; }
+        .photo-box { width:80px; height:96px; border:2px solid #D4A017; border-radius:5px; display:flex; flex-direction:column; align-items:center; justify-content:center; overflow:hidden; background:#f9f9f9; flex-shrink:0; }
         .photo-box img { width:100%; height:100%; object-fit:cover; }
-        .photo-label { font-size:9px; color:#999; text-align:center; }
-        .field-row { display:flex; align-items:baseline; gap:8px; margin-bottom:10px; border-bottom:1px solid #ddd; padding-bottom:6px; }
-        .field-label { font-size:12px; font-weight:700; white-space:nowrap; flex-shrink:0; color:#111; }
-        .field-value { font-size:12.5px; color:#333; flex:1; min-width:0; word-break:break-word; }
-        .grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:10px; }
-        .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:10px; }
-        .section-title { background:linear-gradient(90deg,#D4A017,#F5C842); color:#000; font-weight:900; font-size:12px; text-align:center; padding:5px; letter-spacing:.1em; margin:14px -2px 10px; border-radius:3px; }
-        .course-grid { display:grid; grid-template-columns:1fr 1fr; gap:0; border:1.5px solid #ddd; border-radius:4px; overflow:hidden; margin-bottom:12px; }
-        .course-col { padding:8px 10px; }
+        .photo-lbl { font-size:8px; color:#bbb; text-align:center; }
+
+        /* Field rows */
+        .f-row { display:flex; align-items:baseline; gap:6px; margin-bottom:7px; padding-bottom:5px; border-bottom:1px solid #e8e8e8; }
+        .f-lbl { font-size:11px; font-weight:700; white-space:nowrap; flex-shrink:0; color:#111; min-width:120px; }
+        .f-val { font-size:11.5px; color:#333; flex:1; min-width:0; word-break:break-word; }
+
+        .g3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:7px; }
+        .g2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:7px; }
+        .g-item { border-bottom:1px solid #e8e8e8; padding-bottom:5px; }
+
+        /* Section title */
+        .sec-title { background:linear-gradient(90deg,#D4A017,#F5C842); color:#000; font-weight:900; font-size:10.5px; text-align:center; padding:4px; letter-spacing:.1em; margin:10px -2px 8px; border-radius:2px; }
+
+        /* How-knew */
+        .how-row { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:9px; }
+        .how-item { display:flex; align-items:center; gap:5px; font-size:10px; color:#333; }
+        .cb { width:12px; height:12px; border:1.5px solid #aaa; border-radius:2px; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+        .cb.on { background:#D4A017; border-color:#D4A017; }
+        .ck { color:#000; font-size:8px; font-weight:900; }
+
+        /* Courses */
+        .course-grid { display:grid; grid-template-columns:1fr 1fr; border:1.5px solid #ddd; border-radius:3px; overflow:hidden; margin-bottom:9px; }
+        .course-col { padding:7px 9px; }
         .course-col:first-child { border-right:1px solid #ddd; }
-        .course-item { display:flex; align-items:center; gap:6px; margin-bottom:5px; font-size:11px; color:#333; }
-        .checkbox { width:13px; height:13px; border:1.5px solid #aaa; border-radius:2px; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
-        .checkbox.checked { background:#D4A017; border-color:#D4A017; }
-        .checkmark { color:#000; font-size:9px; font-weight:900; }
-        .fee-table { width:100%; border-collapse:collapse; margin-bottom:12px; border:1.5px solid #ddd; border-radius:4px; overflow:hidden; }
-        .fee-table td { padding:8px 12px; font-size:12px; border:1px solid #eee; }
-        .fee-table .label { font-weight:700; color:#111; width:50%; }
-        .fee-table .value { color:#555; }
-        .terms { font-size:10px; color:#555; margin-bottom:14px; }
-        .terms p { margin-bottom:3px; }
-        .terms span { font-weight:700; color:#D4A017; }
-        .sig-row { display:flex; gap:30px; margin-top:18px; }
-        .sig-box { flex:1; border-top:1.5px solid #aaa; padding-top:6px; text-align:center; }
-        .sig-label { font-size:10px; color:#666; font-weight:600; }
-        .campus-section { background:#f8f8f8; border-top:1px solid #eee; padding:12px 28px; }
-        .campus-row { display:flex; align-items:flex-start; gap:10px; margin-bottom:6px; }
-        .campus-dot { width:18px; height:18px; border-radius:50%; background:linear-gradient(135deg,#D4A017,#F5C842); display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:900; color:#000; flex-shrink:0; margin-top:1px; }
-        .campus-info { font-size:10px; color:#444; }
-        .campus-info strong { font-weight:700; color:#D4A017; font-size:10.5px; }
-        .how-grid { display:flex; flex-wrap:wrap; gap:12px; margin-bottom:12px; }
-        .how-item { display:flex; align-items:center; gap:6px; font-size:11px; color:#333; }
+        .c-item { display:flex; align-items:center; gap:5px; margin-bottom:4px; font-size:10px; color:#333; }
+
+        /* Fee table */
+        .fee-tbl { width:100%; border-collapse:collapse; margin-bottom:9px; border:1.5px solid #ddd; border-radius:3px; overflow:hidden; }
+        .fee-tbl td { padding:6px 10px; font-size:11px; border:1px solid #eee; }
+        .fee-tbl .lbl { font-weight:700; color:#111; }
+        .fee-tbl .val { color:#555; }
+
+        /* Terms */
+        .terms { font-size:9.5px; color:#555; margin-bottom:10px; line-height:1.5; }
+        .terms p { margin-bottom:2px; }
+        .terms b { color:#D4A017; }
+
+        /* Sig row */
+        .sig-row { display:flex; gap:24px; margin-top:14px; }
+        .sig-box { flex:1; border-top:1.5px solid #aaa; padding-top:5px; text-align:center; }
+        .sig-lbl { font-size:9.5px; color:#666; font-weight:600; }
+        .sig-name { font-size:9px; color:#bbb; margin-top:2px; }
+
+        /* Campus footer */
+        .campus-footer { background:#f8f8f8; border-top:1px solid #eee; padding:10px 26px; }
+        .campus-row { display:flex; align-items:flex-start; gap:8px; margin-bottom:5px; }
+        .campus-dot { width:16px; height:16px; border-radius:50%; background:linear-gradient(135deg,#D4A017,#F5C842); display:flex; align-items:center; justify-content:center; font-size:8px; font-weight:900; color:#000; flex-shrink:0; margin-top:1px; }
+        .campus-info { font-size:9.5px; color:#444; line-height:1.4; }
+        .campus-info strong { color:#D4A017; font-size:10px; }
+
+        /* ── PRINT STYLES ── */
         @media print {
-          body { background:#fff; }
-          .page { margin:0; box-shadow:none; border-radius:0; max-width:100%; }
-          .no-print { display:none !important; }
-          @page { margin:8mm; size:A4; }
+          html, body { width:210mm; height:297mm; margin:0; padding:0; background:#fff !important; }
+          .toolbar { display:none !important; }
+          .page-wrap {
+            margin:0 !important;
+            box-shadow:none !important;
+            border-radius:0 !important;
+            max-width:100% !important;
+            width:100% !important;
+          }
+          /* Force everything onto one page */
+          .doc { padding:10px 20px 8px; }
+          @page {
+            size: A4 portrait;
+            margin: 6mm 8mm;
+          }
+          /* Prevent any page breaks inside the document */
+          .hdr, .doc, .campus-footer { page-break-inside: avoid; break-inside: avoid; }
+          * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         }
       `}</style>
 
       {/* Screen toolbar */}
-      <div className="no-print" style={{ background:'#0a0a0a', padding:'10px 20px', display:'flex', alignItems:'center', justifyContent:'space-between', position:'sticky', top:0, zIndex:10 }}>
-        <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-          <div style={{ width:30, height:30, borderRadius:8, background:'linear-gradient(135deg,#D4A017,#F5C842)', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:900, color:'#000', fontSize:16 }}>G</div>
-          <span style={{ color:'#fff', fontSize:13, fontWeight:600 }}>GCI Admission Form — Print Preview</span>
+      <div className="toolbar">
+        <div className="toolbar-title">
+          <div className="toolbar-badge">G</div>
+          GCI Admission Form — Print Preview
         </div>
-        <div style={{ display:'flex', gap:10 }}>
-          <button onClick={() => window.print()}
-            style={{ background:'linear-gradient(135deg,#D4A017,#F5C842)', color:'#000', border:'none', padding:'7px 18px', borderRadius:8, fontSize:12, fontWeight:700, cursor:'pointer' }}>
-            🖨 Print / Save PDF
-          </button>
-          <button onClick={() => window.close()}
-            style={{ background:'transparent', color:'rgba(255,255,255,.6)', border:'1px solid rgba(255,255,255,.15)', padding:'7px 14px', borderRadius:8, fontSize:12, cursor:'pointer' }}>
-            Close
-          </button>
+        <div className="toolbar-btns">
+          <button className="btn-print" onClick={() => window.print()}>🖨 Print / Save PDF</button>
+          <button className="btn-close" onClick={() => window.close()}>Close</button>
         </div>
       </div>
 
       {/* Printable document */}
-      <div className="page">
+      <div className="page-wrap">
 
         {/* Header */}
-        <div className="header">
-          <div className="logo-text">
+        <div className="hdr">
+          <div className="hdr-title">
             <h1>Global Computer Institute</h1>
             <p>Registered by: Sindh Board of Technical Education</p>
           </div>
           <div className="admit-badge">ADMISSION<br />FORM</div>
         </div>
 
-        <div className="body">
+        {/* Tracking ID bar */}
+        {s.trackingId && (
+          <div className="tracking-bar">
+            <span>Tracking ID:</span> {s.trackingId}
+            <span style={{ marginLeft:'auto' }}>Status: {s.status || 'Pending'}</span>
+          </div>
+        )}
+
+        <div className="doc">
 
           {/* Reg No + Photo */}
-          <div className="reg-photo-row">
-            <div className="reg-section">
-              <div className="field-label">Reg. No.</div>
+          <div className="top-row">
+            <div className="reg-sec">
+              <div className="reg-lbl">Reg. No.</div>
               <div className="reg-boxes">
                 {(s.regNo || s.cnic || '').padEnd(8, ' ').slice(0, 8).split('').map((ch, i) => (
                   <div key={i} className="reg-box">{ch.trim()}</div>
@@ -204,79 +249,40 @@ function PrintPageClient() {
               </div>
             </div>
             <div className="photo-box">
-              {photoSrc
-                ? <img src={photoSrc} alt={s.fullName} />
-                : <span className="photo-label">Photo<br />1 × 1</span>}
+              {s.image
+                ? <img src={s.image} alt={s.fullName} />
+                : <span className="photo-lbl">Photo<br />1 × 1</span>}
             </div>
           </div>
 
           {/* Core fields */}
-          <div className="field-row">
-            <div className="field-label">Student Name:</div>
-            <div className="field-value">{s.fullName || '—'}</div>
-          </div>
-          <div className="field-row">
-            <div className="field-label">Father&apos;s Name:</div>
-            <div className="field-value">{s.fatherName || '—'}</div>
-          </div>
-          <div className="field-row">
-            <div className="field-label">Address:</div>
-            <div className="field-value">{s.address || '—'}</div>
-          </div>
+          <div className="f-row"><div className="f-lbl">Student Name:</div><div className="f-val">{s.fullName || '—'}</div></div>
+          <div className="f-row"><div className="f-lbl">Father&apos;s Name:</div><div className="f-val">{s.fatherName || '—'}</div></div>
+          <div className="f-row"><div className="f-lbl">Address:</div><div className="f-val">{s.address || '—'}</div></div>
 
-          {/* Row: Profession · Student Mob · Guardian Mob */}
-          <div className="grid-3">
-            <div className="field-row" style={{ margin:0 }}>
-              <div className="field-label">Profession:</div>
-              <div className="field-value">{s.profession || '—'}</div>
-            </div>
-            <div className="field-row" style={{ margin:0 }}>
-              <div className="field-label">Student Mob #:</div>
-              <div className="field-value">{s.phone || '—'}</div>
-            </div>
-            <div className="field-row" style={{ margin:0 }}>
-              <div className="field-label">Guardian Mob #:</div>
-              <div className="field-value">{s.guardianPhone || '—'}</div>
-            </div>
+          <div className="g3">
+            <div className="g-item"><div className="f-lbl">Profession:</div><div className="f-val">{s.profession || '—'}</div></div>
+            <div className="g-item"><div className="f-lbl">Student Mob #:</div><div className="f-val">{s.phone || '—'}</div></div>
+            <div className="g-item"><div className="f-lbl">Guardian Mob #:</div><div className="f-val">{s.guardianPhone || '—'}</div></div>
           </div>
-
-          {/* Row: Qualification · WhatsApp */}
-          <div className="grid-2" style={{ marginTop:8 }}>
-            <div className="field-row" style={{ margin:0 }}>
-              <div className="field-label">Qualification:</div>
-              <div className="field-value">{s.qualification || '—'}</div>
-            </div>
-            <div className="field-row" style={{ margin:0 }}>
-              <div className="field-label">WhatsApp #:</div>
-              <div className="field-value">{s.whatsapp || s.phone || '—'}</div>
-            </div>
+          <div className="g2">
+            <div className="g-item"><div className="f-lbl">Qualification:</div><div className="f-val">{s.qualification || '—'}</div></div>
+            <div className="g-item"><div className="f-lbl">WhatsApp #:</div><div className="f-val">{s.whatsapp || s.phone || '—'}</div></div>
           </div>
-
-          {/* Row: Course · Timing */}
-          <div className="grid-2" style={{ marginTop:8 }}>
-            <div className="field-row" style={{ margin:0 }}>
-              <div className="field-label">Course To Be Join:</div>
-              <div className="field-value">{s.courseToJoin || s.course || '—'}</div>
-            </div>
-            <div className="field-row" style={{ margin:0 }}>
-              <div className="field-label">Timing:</div>
-              <div className="field-value">{s.timing || '—'}</div>
-            </div>
+          <div className="g2">
+            <div className="g-item"><div className="f-lbl">Course To Join:</div><div className="f-val">{s.courseToJoin || s.course || '—'}</div></div>
+            <div className="g-item"><div className="f-lbl">Timing:</div><div className="f-val">{s.timing || '—'}</div></div>
           </div>
 
           {/* How did you know */}
-          <div style={{ marginTop:12, marginBottom:10 }}>
-            <div style={{ fontSize:11, fontWeight:700, marginBottom:6 }}>
-              How did you get to know about Global Computer Institute?
-            </div>
-            <div className="how-grid">
-              {['By Advertising', "By Global's Student", 'By Friend', 'Other'].map(opt => {
-                const checked = (s.howKnew || '').includes(opt);
+          <div style={{ marginBottom:8 }}>
+            <div style={{ fontSize:10, fontWeight:700, marginBottom:5 }}>How did you get to know about Global Computer Institute?</div>
+            <div className="how-row">
+              {["By Advertising", "By Global's Student", "By Friend", "Other"].map(opt => {
+                const on = (s.howKnew || '').includes(opt);
                 return (
                   <div key={opt} className="how-item">
-                    <div className={`checkbox ${checked ? 'checked' : ''}`}>
-                      {checked && <span className="checkmark">✓</span>}
-                    </div>
+                    <div className={`cb ${on ? 'on' : ''}`}>{on && <span className="ck">✓</span>}</div>
                     {opt}
                   </div>
                 );
@@ -284,92 +290,77 @@ function PrintPageClient() {
             </div>
           </div>
 
-          {/* Choose the Course */}
-          <div className="section-title">CHOOSE THE COURSE</div>
+          {/* Courses */}
+          <div className="sec-title">CHOOSE THE COURSE</div>
           <div className="course-grid">
             <div className="course-col">
-              {ALL_COURSES_LEFT.map(course => {
-                const checked = coursesArr.some(c => c.toLowerCase().includes(course.toLowerCase().slice(0, 10)));
-                return (
-                  <div key={course} className="course-item">
-                    <div className={`checkbox ${checked ? 'checked' : ''}`}>
-                      {checked && <span className="checkmark">✓</span>}
-                    </div>
-                    {course}
-                  </div>
-                );
-              })}
+              {ALL_LEFT.map(c => (
+                <div key={c} className="c-item">
+                  <div className={`cb ${isChecked(c) ? 'on' : ''}`}>{isChecked(c) && <span className="ck">✓</span>}</div>
+                  {c}
+                </div>
+              ))}
             </div>
             <div className="course-col">
-              {ALL_COURSES_RIGHT.map(course => {
-                const checked = coursesArr.some(c => c.toLowerCase().includes(course.toLowerCase().slice(0, 10)));
-                return (
-                  <div key={course} className="course-item">
-                    <div className={`checkbox ${checked ? 'checked' : ''}`}>
-                      {checked && <span className="checkmark">✓</span>}
-                    </div>
-                    {course}
-                  </div>
-                );
-              })}
-              <div className="course-item">
-                <div className="checkbox" />
-                Others: <span style={{ color:'#333', marginLeft:4 }}>{coursesArr.filter(c => c.toLowerCase().startsWith('others')).join(', ')}</span>
-              </div>
+              {ALL_RIGHT.map(c => (
+                <div key={c} className="c-item">
+                  <div className={`cb ${isChecked(c) ? 'on' : ''}`}>{isChecked(c) && <span className="ck">✓</span>}</div>
+                  {c}
+                </div>
+              ))}
+              <div className="c-item"><div className="cb" />Others: ___________</div>
             </div>
           </div>
 
           {/* Fee table */}
-          <table className="fee-table">
+          <table className="fee-tbl">
             <tbody>
               <tr>
-                <td className="label">Date of Admission:</td>
-                <td className="value">{s.dateOfAdmission || s.submittedAt?.slice(0,10) || submittedDate}</td>
-                <td className="label">Admission Fee:</td>
-                <td className="value">{s.admissionFee || '—'}</td>
+                <td className="lbl">Date of Admission:</td>
+                <td className="val">{s.dateOfAdmission || submittedDate}</td>
+                <td className="lbl">Admission Fee:</td>
+                <td className="val">{s.admissionFee || '—'}</td>
               </tr>
               <tr>
-                <td className="label">Monthly Fee:</td>
-                <td className="value">{s.monthlyFee || '—'}</td>
-                <td className="label">Total Fee:</td>
-                <td className="value">{s.totalFee || '—'}</td>
+                <td className="lbl">Monthly Fee:</td>
+                <td className="val">{s.monthlyFee || '—'}</td>
+                <td className="lbl">Total Fee:</td>
+                <td className="val">{s.totalFee || '—'}</td>
               </tr>
             </tbody>
           </table>
 
           {/* Terms */}
           <div className="terms">
-            <p><span>1.</span> Admission, Monthly &amp; SBTE fee once paid are <strong>non-refundable</strong>.</p>
-            <p><span>2.</span> Monthly Fee must be paid on/before 5th of every month, otherwise late fee Rs. 25/- per day will be charged.</p>
-            <p><span>3.</span> Examination fee for SBTE should be paid at the time of registration which is not included in course training fee.</p>
+            <p><b>1.</b> Admission, Monthly &amp; SBTE fee once paid are <strong>non-refundable</strong>.</p>
+            <p><b>2.</b> Monthly Fee must be paid on/before 5th of every month, otherwise late fee Rs. 25/- per day will be charged.</p>
+            <p><b>3.</b> Examination fee for SBTE should be paid at the time of registration which is not included in course training fee.</p>
           </div>
 
           {/* Signatures */}
           <div className="sig-row">
             <div className="sig-box">
-              <div style={{ height:38 }} />
-              <div className="sig-label">Administrator</div>
+              <div style={{ height:34 }} />
+              <div className="sig-lbl">Administrator</div>
             </div>
             <div className="sig-box">
-              <div style={{ height:38 }} />
-              <div className="sig-label">Signature of Applicant</div>
-              <div style={{ fontSize:10, color:'#bbb', marginTop:2 }}>{s.fullName}</div>
+              <div style={{ height:34 }} />
+              <div className="sig-lbl">Signature of Applicant</div>
+              <div className="sig-name">{s.fullName}</div>
             </div>
           </div>
         </div>
 
-        {/* Campus info */}
-        <div className="campus-section">
+        {/* Campus footer */}
+        <div className="campus-footer">
           {[
-            { num:'1', name:'Campus 1', addr:'Saudabad Malir Indus Mehran Society A-22, Near 1st P.S.O Petrol Pump, Karachi-75080', contact:'0213-4504816, 0333-3580212 | gcisbte11@gmail.com' },
-            { num:'2', name:'Campus 2', addr:'Model Colony Near Railway Crossing Rabbani Masjid, Karachi', contact:'0322-2511944, 0318-2511944' },
-            { num:'3', name:'Campus 3', addr:'Shahfaisal Colony-2 Behind Fauji Foundation Hospital Big Plots A-7, Karachi', contact:'0317-4740335' },
+            { n:'1', addr:'Saudabad Malir — Indus Mehran Society A-22, Near 1st P.S.O Petrol Pump, Karachi-75080', contact:'0213-4504816, 0333-3580212 | gcisbte11@gmail.com' },
+            { n:'2', addr:'Model Colony — Near Railway Crossing, Rabbani Masjid, Karachi', contact:'0322-2511944, 0318-2511944' },
+            { n:'3', addr:'Shahfaisal Colony-3 — Near Fauji Foundation Hospital, Plot# 3/147, Karachi-75230', contact:'0317-4740335, 0347-2763587' },
           ].map(c => (
-            <div key={c.num} className="campus-row">
-              <div className="campus-dot">{c.num}</div>
-              <div className="campus-info">
-                <strong>{c.name}</strong> — {c.addr} | Contact: {c.contact}
-              </div>
+            <div key={c.n} className="campus-row">
+              <div className="campus-dot">{c.n}</div>
+              <div className="campus-info"><strong>Campus {c.n}</strong> — {c.addr} | {c.contact}</div>
             </div>
           ))}
         </div>

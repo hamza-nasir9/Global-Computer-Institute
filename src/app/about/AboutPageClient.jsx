@@ -316,6 +316,92 @@ export default function AboutPageClient() {
         </section>
 
 
+        {/* ── Principals Section ── */}
+        <section className="py-16 md:py-24 px-4 md:px-16" style={{ backgroundColor: 'var(--bg-primary)' }}>
+          <div className="max-w-5xl mx-auto">
+            <SectionHeader label="Our Leadership" title="Campus" highlight="Principals" center />
+            <p className="text-center text-sm max-w-xl mx-auto mt-3 mb-10 md:mb-14" style={{ color: 'var(--text-secondary)' }}>
+              Each of our three campuses is led by a dedicated principal committed to academic excellence and student development.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 md:gap-8">
+              {[
+                {
+                  name:        'Principal Name',
+                  designation: 'Principal — Campus I',
+                  campus:      'Main Campus, Saudabad',
+                  image:       null,
+                  initials:    'P1',
+                },
+                {
+                  name:        'Principal Name',
+                  designation: 'Principal — Campus II',
+                  campus:      'Branch Campus',
+                  image:       null,
+                  initials:    'P2',
+                },
+                {
+                  name:        'Principal Name',
+                  designation: 'Principal — Campus III',
+                  campus:      'Branch Campus',
+                  image:       null,
+                  initials:    'P3',
+                },
+              ].map((principal, i) => (
+                <div key={i}
+                  className="group flex flex-col items-center text-center rounded-3xl border p-6 md:p-8 transition-all duration-300 hover:-translate-y-2"
+                  style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-subtle)' }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border-gold)'; e.currentTarget.style.boxShadow = 'var(--shadow-card)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-subtle)'; e.currentTarget.style.boxShadow = 'none'; }}>
+
+                  {/* Photo */}
+                  <div className="relative mb-5">
+                    <div className="w-28 h-28 rounded-full overflow-hidden border-4 mx-auto flex items-center justify-center"
+                      style={{
+                        borderColor: '#D4A017',
+                        boxShadow: '0 0 0 4px rgba(212,160,23,0.12), 0 4px 20px rgba(212,160,23,0.20)',
+                        background: 'linear-gradient(135deg,rgba(212,160,23,0.15),rgba(212,160,23,0.04))',
+                      }}>
+                      {principal.image ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={principal.image}
+                          alt={principal.name}
+                          className="w-full h-full object-cover object-center"
+                        />
+                      ) : (
+                        <span className="font-display font-black text-3xl" style={{ color: '#D4A017' }}>
+                          {principal.initials}
+                        </span>
+                      )}
+                    </div>
+                    {/* Principal badge */}
+                    <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full text-[10px] font-black text-black whitespace-nowrap"
+                      style={{ background: 'linear-gradient(135deg,#D4A017,#F5C842)', boxShadow: '0 2px 8px rgba(212,160,23,0.4)' }}>
+                      Principal
+                    </div>
+                  </div>
+
+                  {/* Name & Title */}
+                  <h3 className="font-display font-bold text-base md:text-lg mt-3 group-hover:text-[#F5C842] transition-colors"
+                    style={{ color: 'var(--text-primary)' }}>
+                    {principal.name}
+                  </h3>
+                  <p className="text-sm font-semibold mt-1" style={{ color: '#D4A017' }}>
+                    {principal.designation}
+                  </p>
+                  <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                    {principal.campus}
+                  </p>
+
+                  {/* Decorative line */}
+                  <div className="w-8 h-0.5 mt-4 rounded-full mx-auto" style={{ background: 'linear-gradient(90deg,transparent,#D4A017,transparent)' }} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+
         {/* Faculty */}
         <section className="py-12 md:py-24 px-4 md:px-16" style={{ backgroundColor:'var(--bg-primary)' }}>
           <div className="max-w-7xl mx-auto">
@@ -373,7 +459,7 @@ export default function AboutPageClient() {
             <Link href="/courses" className="inline-flex items-center gap-2 bg-gold-gradient text-black font-black px-9 py-4 rounded-full text-sm transition-transform duration-200 hover:scale-105" style={{ boxShadow:'var(--shadow-gold)' }}>
               Explore Courses <ArrowRight size={16} />
             </Link>
-            <Link href="/admissions" className="inline-flex items-center gap-2 border-2 font-semibold px-9 py-4 rounded-full text-sm transition-colors"
+            <Link href="/admission-form" className="inline-flex items-center gap-2 border-2 font-semibold px-9 py-4 rounded-full text-sm transition-colors"
               style={{ borderColor:'var(--border-gold)', color:'var(--text-primary)' }}>Apply Now</Link>
           </div>
         </section>

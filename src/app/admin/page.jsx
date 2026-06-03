@@ -18,7 +18,7 @@ export default function AdminLegacyRedirect() {
     } else if (user.role === 'admin') {
       router.replace('/dashboard/admin');
     } else {
-      router.replace('/dashboard/student');
+      router.replace('/');
     }
   }, [user, loading, router]);
 

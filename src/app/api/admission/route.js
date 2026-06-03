@@ -9,17 +9,21 @@ import { sendAdmissionNotification } from '@/lib/mailer';
 
 const isObjectId = (s) => /^[a-f\d]{24}$/i.test(String(s ?? ''));
 
+/** Generate a unique tracking ID: GCI-YYYY-XXXXXX */
+function generateTrackingId() {
+  const year   = new Date().getFullYear();
+  const random = Math.random().toString(36).substring(2, 8).toUpperCase();
+  return `GCI-${year}-${random}`;
+}
+
 /**
  * Get requester role from request headers.
- * x-user-role: admin is set by AuthContext from the verified login response.
- * For ObjectId users we also verify against the DB.
  */
 async function getRole(req) {
   const uid  = req.headers.get('x-user-id')  || '';
   const role = req.headers.get('x-user-role') || '';
 
   if (role === 'admin') {
-    // Additionally verify in DB for ObjectId users
     if (isObjectId(uid)) {
       try {
         const conn = await dbConnect();
@@ -30,7 +34,7 @@ async function getRole(req) {
         }
       } catch { /* DB verify failed — trust header */ }
     }
-    return 'admin'; // trust header for non-ObjectId (local admin during setup)
+    return 'admin';
   }
 
   if (isObjectId(uid)) {
@@ -49,7 +53,6 @@ async function getRole(req) {
 /* ── POST: Submit admission form ─────────────────────────────── */
 export async function POST(req) {
   try {
-    // Parse body
     let body;
     try {
       body = await req.json();
@@ -58,27 +61,17 @@ export async function POST(req) {
     }
 
     const {
-      // Registration
       regNo,
-      // Student info
       fullName, fatherName, address, qualification, profession,
-      // Contact
       phone, guardianPhone, whatsapp, email,
-      // Course
       course, courseToJoin, selectedCourses,
-      // Timing & how they knew
       timing, howKnew,
-      // Fee
       dateOfAdmission, monthlyFee, admissionFee, totalFee,
-      // Photo path (filesystem path from /api/upload)
       image,
-      // IDs
       userId: bodyUserId,
-      // Legacy fields
       cnic, gender, dob,
     } = body;
 
-    // ── Required field validation ──────────────────────────────
     if (!fullName?.trim()) {
       return NextResponse.json({ error: 'Student name (fullName) is required.' }, { status: 400 });
     }
@@ -86,7 +79,6 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Student mobile (phone) is required.' }, { status: 400 });
     }
 
-    // ── Resolve primary course ─────────────────────────────────
     let primaryCourse = '';
     if (Array.isArray(selectedCourses) && selectedCourses.length > 0) {
       primaryCourse = selectedCourses[0];
@@ -95,17 +87,14 @@ export async function POST(req) {
     }
     if (!primaryCourse) primaryCourse = (courseToJoin || course || 'Not specified').trim();
 
-    // ── Resolve howKnew to string ──────────────────────────────
     const howKnewStr = Array.isArray(howKnew)
       ? howKnew.join(', ')
       : (howKnew || '');
 
-    // ── Resolve selectedCourses to string ──────────────────────
     const selectedCoursesStr = Array.isArray(selectedCourses)
       ? selectedCourses.join(', ')
       : (selectedCourses || '');
 
-    // ── Resolve userId ─────────────────────────────────────────
     const headerUid   = req.headers.get('x-user-id') || '';
     const resolvedUid = isObjectId(headerUid)  ? headerUid
                       : isObjectId(bodyUserId) ? String(bodyUserId)
@@ -113,30 +102,24 @@ export async function POST(req) {
 
     const cleanEmail = (email || '').trim().toLowerCase();
 
-    // ── Build payload matching Admission model schema ──────────
+    // Generate unique tracking ID
+    const trackingId = generateTrackingId();
+
     const admissionPayload = {
-      // User link
+      trackingId,
       userId:    resolvedUid,
       userEmail: cleanEmail,
-
-      // Core
       fullName:      fullName.trim(),
       fatherName:    (fatherName    || '').trim(),
       course:        primaryCourse,
       phone:         phone.trim(),
       email:         cleanEmail,
-
-      // Registration / legacy
       regNo:         (regNo || cnic || '').trim(),
       cnic:          (cnic  || regNo || '').trim(),
-
-      // Personal
       address:       (address       || '').trim(),
       qualification: (qualification || '').trim(),
       gender:        gender  || '',
       dob:           dob     || '',
-
-      // Extended GCI form fields
       profession:      (profession    || '').trim(),
       guardianPhone:   (guardianPhone || '').trim(),
       whatsapp:        (whatsapp      || '').trim(),
@@ -144,20 +127,14 @@ export async function POST(req) {
       courseToJoin:    (courseToJoin  || '').trim(),
       howKnew:         howKnewStr,
       selectedCourses: selectedCoursesStr,
-
-      // Fee
       dateOfAdmission: dateOfAdmission || '',
       monthlyFee:      monthlyFee      || '',
       admissionFee:    admissionFee    || '',
       totalFee:        totalFee        || '',
-
-      // Photo — filesystem path e.g. /uploads/students/student-xxx.jpg
       image: image || '',
-
       status: 'Pending',
     };
 
-    // ── Connect and save ───────────────────────────────────────
     let conn;
     try {
       conn = await dbConnect();
@@ -172,7 +149,6 @@ export async function POST(req) {
     let savedAdmission;
 
     if (conn) {
-      // ── MongoDB save ──────────────────────────────────────────
       try {
         const doc = await Admission.create(admissionPayload);
         savedAdmission = {
@@ -181,7 +157,7 @@ export async function POST(req) {
           _id:         doc._id.toString(),
           submittedAt: doc.createdAt,
         };
-        console.log(`[admission] ✓ Saved to MongoDB: ${doc._id} — ${fullName}`);
+        console.log(`[admission] ✓ Saved to MongoDB: ${doc._id} — ${fullName} — Tracking: ${trackingId}`);
       } catch (saveErr) {
         console.error('[POST /api/admission] Mongoose save error:', saveErr.message, saveErr.errors);
         return NextResponse.json(
@@ -190,7 +166,6 @@ export async function POST(req) {
         );
       }
     } else {
-      // ── Offline fallback ──────────────────────────────────────
       const localId = `local-${Date.now()}`;
       savedAdmission = {
         ...admissionPayload,
@@ -202,7 +177,6 @@ export async function POST(req) {
       console.warn('[admission] ⚠ Saved locally only — MongoDB not connected');
     }
 
-    // ── Fire email notification (non-blocking) ─────────────────
     sendAdmissionNotification(savedAdmission).catch(err =>
       console.warn('[admission] Email notification failed (non-fatal):', err.message)
     );
@@ -221,7 +195,6 @@ export async function POST(req) {
 /* ── GET: Admin fetch all admissions ─────────────────────────── */
 export async function GET(req) {
   try {
-    // Auth check
     const role = await getRole(req);
     if (!role) {
       return NextResponse.json({ error: 'Unauthorized — please log in.' }, { status: 401 });
@@ -230,7 +203,6 @@ export async function GET(req) {
       return NextResponse.json({ error: 'Admin access required.' }, { status: 403 });
     }
 
-    // Connect
     let conn;
     try {
       conn = await dbConnect();
@@ -245,7 +217,6 @@ export async function GET(req) {
       return NextResponse.json({ error: 'Database not configured.' }, { status: 503 });
     }
 
-    // Parse query params
     const { searchParams } = new URL(req.url);
     const status = searchParams.get('status') || '';
     const course = searchParams.get('course') || '';
@@ -253,7 +224,6 @@ export async function GET(req) {
     const page   = Math.max(1, parseInt(searchParams.get('page')  || '1'));
     const limit  = Math.min(500, parseInt(searchParams.get('limit') || '200'));
 
-    // Build filter
     const filter = {};
     if (status && status !== 'All') filter.status = status;
     if (course && course !== 'All') filter.course = course;
@@ -266,6 +236,7 @@ export async function GET(req) {
         { cnic: re },
         { regNo: re },
         { course: re },
+        { trackingId: re },
       ];
     }
 

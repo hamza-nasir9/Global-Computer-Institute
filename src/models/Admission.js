@@ -6,6 +6,9 @@ import mongoose from 'mongoose';
 
 const AdmissionSchema = new mongoose.Schema(
   {
+    /* Tracking ID — unique human-readable identifier */
+    trackingId:    { type: String, default: '', trim: true, index: true },
+
     /* Link to registered user — optional (local mode users not in DB) */
     userId:        { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null, index: true },
     userEmail:     { type: String, default: '', lowercase: true, trim: true, index: true },
@@ -48,7 +51,7 @@ const AdmissionSchema = new mongoose.Schema(
     /* Status managed by admin */
     status: {
       type: String,
-      enum: ['Pending', 'Approved', 'Rejected'],
+      enum: ['Pending', 'Under Review', 'Approved', 'Rejected'],
       default: 'Pending',
       index: true,
     },

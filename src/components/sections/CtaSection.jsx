@@ -60,7 +60,7 @@ export default function CtaSection() {
         </p>
         
         <div data-cta-el className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center gsap-hidden">
-          <a href="/admissions" className="inline-flex items-center justify-center gap-2 bg-gold-gradient text-black font-black px-6 sm:px-10 py-3 sm:py-4 rounded-full text-sm sm:text-base transition-transform duration-200 hover:scale-105 hover:-translate-y-1 active:scale-95 w-full sm:w-auto"
+          <a href="/admission-form" className="inline-flex items-center justify-center gap-2 bg-gold-gradient text-black font-black px-6 sm:px-10 py-3 sm:py-4 rounded-full text-sm sm:text-base transition-transform duration-200 hover:scale-105 hover:-translate-y-1 active:scale-95 w-full sm:w-auto"
             style={{ boxShadow: '0 20px 50px rgba(212,160,23,0.45)' }}>
             <GraduationCap size={18} />Apply Now — Free Consultation
           </a>

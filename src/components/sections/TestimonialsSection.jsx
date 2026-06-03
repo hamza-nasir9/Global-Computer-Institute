@@ -26,7 +26,7 @@ export default function TestimonialsSection() {
   const t = TESTIMONIALS[current];
 
   return (
-    <section className="py-12 md:py-24 px-4 sm:px-6 md:px-16 relative overflow-hidden" style={{ backgroundColor:'var(--bg-primary)' }}>
+    <section className="py-10 md:py-16 px-4 sm:px-6 md:px-16 relative overflow-hidden" style={{ backgroundColor:'var(--bg-primary)' }}>
       
       <div className="absolute inset-0 pointer-events-none" style={{ background:'radial-gradient(ellipse at center, rgba(212,160,23,0.05) 0%, transparent 65%)' }} />
       

@@ -33,7 +33,7 @@ export async function POST(req) {
 
     if (!conn) {
       return NextResponse.json(
-        { error: 'Database not configured. Contact administrator.' },
+        { error: 'Database not configured. Please create .env.local with your MONGODB_URI. See SETUP.md for instructions.' },
         { status: 503 }
       );
     }

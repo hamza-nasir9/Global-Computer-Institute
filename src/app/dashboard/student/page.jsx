@@ -1,16 +1,9 @@
-import { Suspense } from 'react';
-import StudentDashboardClient from './StudentDashboardClient';
-
-export const metadata = { title: 'Student Dashboard — GCI' };
+/**
+ * Student dashboard has been removed.
+ * Redirect all visitors to homepage.
+ */
+import { redirect } from 'next/navigation';
 
 export default function StudentDashboardPage() {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor:'var(--bg-primary)' }}>
-        <span className="w-10 h-10 border-2 border-[#D4A017]/30 border-t-[#D4A017] rounded-full animate-spin" />
-      </div>
-    }>
-      <StudentDashboardClient />
-    </Suspense>
-  );
+  redirect('/');
 }

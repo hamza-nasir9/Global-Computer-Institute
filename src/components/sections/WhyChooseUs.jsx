@@ -30,7 +30,7 @@ export default function WhyChooseUs() {
   }, []);
 
   return (
-    <section className="py-12 md:py-24 px-4 sm:px-6 md:px-16" style={{ backgroundColor:'var(--bg-section)' }}>
+    <section className="py-10 md:py-16 px-4 sm:px-6 md:px-16" style={{ backgroundColor:'var(--bg-section)' }}>
       <div className="max-w-7xl mx-auto">
 
         {/* Section Header */}

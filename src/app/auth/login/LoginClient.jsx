@@ -28,7 +28,7 @@ export default function LoginClient() {
   useEffect(() => {
     if (!authLoading && user) {
       if (redirect) { router.replace(redirect); return; }
-      router.replace(user.role === 'admin' ? '/dashboard/admin' : '/dashboard/student');
+      router.replace(user.role === 'admin' ? '/dashboard/admin' : '/');
     }
   }, [user, authLoading, redirect, router]);
 
@@ -53,9 +53,14 @@ export default function LoginClient() {
     try {
       const u = await login({ email: form.email, password: form.password });
       if (redirect) { router.replace(redirect); return; }
-      router.replace(u.role === 'admin' ? '/dashboard/admin' : '/dashboard/student');
+      router.replace(u.role === 'admin' ? '/dashboard/admin' : '/');
     } catch (err) {
-      setErrors({ general: err.message });
+      // Surface setup instructions for the most common deployment mistake
+      if (err.message?.includes('MONGODB_URI') || err.message?.includes('not configured')) {
+        setErrors({ general: '⚙️ Database not configured. Create .env.local with MONGODB_URI. See SETUP.md.' });
+      } else {
+        setErrors({ general: err.message });
+      }
     } finally { setLoading(false); }
   }
 
@@ -131,9 +136,9 @@ export default function LoginClient() {
             </p>
           </div>
 
-          {/* Admin hint */}
+          {/* Admin hint + Setup instructions */}
           <div className="mt-4 p-3 rounded-xl" style={{ backgroundColor:'var(--bg-input)', border:'1px solid var(--border-subtle)' }}>
-            <p className="text-[11px] text-center mb-1.5 font-semibold" style={{ color:'var(--text-muted)' }}>Admin account</p>
+            <p className="text-[11px] text-center mb-1.5 font-semibold" style={{ color:'var(--text-muted)' }}>Admin credentials</p>
             <div className="space-y-1">
               <p className="text-[11px] text-center" style={{ color:'var(--text-muted)' }}>
                 Email: <span className="text-[#D4A017] font-mono">admin@gmail.com</span>
@@ -141,8 +146,14 @@ export default function LoginClient() {
               <p className="text-[11px] text-center" style={{ color:'var(--text-muted)' }}>
                 Password: <span className="text-[#D4A017] font-mono">Admin@123</span>
               </p>
-              <p className="text-[11px] text-center" style={{ color:'var(--text-muted)' }}>
-                Students: register a new account above
+            </div>
+            <div className="mt-2 pt-2 border-t" style={{ borderColor:'var(--border-subtle)' }}>
+              <p className="text-[10px] text-center" style={{ color:'var(--text-muted)' }}>
+                Getting errors? Check{' '}
+                <a href="/api/test-db" target="_blank" className="text-[#D4A017] hover:underline">
+                  /api/test-db
+                </a>{' '}and read{' '}
+                <span className="text-[#D4A017]">SETUP.md</span>
               </p>
             </div>
           </div>

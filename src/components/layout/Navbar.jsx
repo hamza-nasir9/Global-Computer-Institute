@@ -19,6 +19,10 @@ const NAV_LINKS = [
   { label: 'Gallery',    href: '/gallery'    },
   { label: 'Contact',    href: '/contact'    },
 ];
+// Shown only to authenticated (non-admin) users
+const AUTH_NAV_LINKS = [
+  { label: 'Tracking ID', href: '/track' },
+];
 
 export default function Navbar() {
   // ── All hooks unconditionally at top ─────────────────────────────────────
@@ -37,7 +41,8 @@ export default function Navbar() {
   const isDark  = theme === 'dark';
   const isHome  = pathname === '/';
   const isSolid = scrolled || !isHome;
-  const dashHref = user?.role === 'admin' ? '/dashboard/admin' : '/dashboard/student';
+  const isAdmin = user?.role === 'admin';
+  const dashHref = '/dashboard/admin';
 
   /* Entrance */
   useEffect(() => {
@@ -155,21 +160,28 @@ export default function Navbar() {
 
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 flex-shrink-0">
-            <div className="w-8 h-8 md:w-9 md:h-9 rounded-xl bg-gold-gradient flex items-center justify-center font-display font-black text-black text-sm md:text-base transition-transform hover:scale-105"
-              style={{ boxShadow: 'var(--shadow-gold-sm)' }}>G</div>
-            <div className="hidden sm:block">
-              <span className={`font-display font-bold text-base md:text-lg leading-none ${solidText}`}>
-                GCI<span className="text-[#D4A017]"> Institute</span>
-              </span>
-              <p className={`text-[9px] tracking-[0.15em] uppercase leading-none mt-0.5 ${solidMuted}`}>
-                Global Computer Institute
-              </p>
-            </div>
+            {/*
+              Both logo files contain dark/black content on transparent background.
+              On dark navbar: apply brightness(0) invert(1) to turn black → white.
+              On light navbar: show logo as-is (black on white = visible).
+              suppressHydrationWarning: isDark/isSolid are client-only state.
+            */}
+            <img
+              src="/images/logo-light.png"
+              alt="Global Computer Institute"
+              suppressHydrationWarning
+              className="h-10 w-auto object-contain transition-all duration-200"
+              style={{
+                filter: (isSolid && !isDark)
+                  ? 'none'                              /* light solid navbar → dark logo visible */
+                  : 'brightness(0) invert(1)',           /* dark/transparent navbar → invert to white */
+              }}
+            />
           </Link>
 
           {/* Desktop nav links */}
           <ul className="hidden lg:flex items-center gap-5 xl:gap-6 flex-1">
-            {NAV_LINKS.map(({ label, href }) => {
+            {[...NAV_LINKS, ...(user ? AUTH_NAV_LINKS : [])].map(({ label, href }) => {
               const active = pathname === href || (href !== '/' && pathname.startsWith(href));
               return (
                 <li key={label}>
@@ -222,18 +234,15 @@ export default function Navbar() {
                       <p className="text-xs truncate mt-0.5" style={{ color: 'var(--text-muted)' }}>{user.email}</p>
                     </div>
                     <div className="py-1">
-                      {[
-                        { label: 'Dashboard',  href: dashHref },
-                        { label: 'My Profile', href: `${dashHref}?tab=profile` },
-                      ].map(({ label, href }) => (
-                        <Link key={label} href={href} onClick={() => setProfileOpen(false)}
+                      {isAdmin && (
+                        <Link href={dashHref} onClick={() => setProfileOpen(false)}
                           className="flex items-center px-4 py-2.5 text-sm transition-colors"
                           style={{ color: 'var(--text-secondary)' }}
                           onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--bg-card-hover)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
                           onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--text-secondary)'; }}>
-                          {label}
+                          Admin Dashboard
                         </Link>
-                      ))}
+                      )}
                       <Link href="/" onClick={() => setProfileOpen(false)}
                         className="flex items-center px-4 py-2.5 text-sm transition-colors"
                         style={{ color: 'var(--text-secondary)' }}
@@ -310,17 +319,18 @@ export default function Navbar() {
 
         {/* Logo */}
         <div data-ml className="flex items-center gap-2.5 mb-2">
-          <div className="w-9 h-9 rounded-xl bg-gold-gradient flex items-center justify-center font-display font-black text-black text-base"
-            style={{ boxShadow: 'var(--shadow-gold-sm)' }}>G</div>
-          <div>
-            <span className="font-display font-bold text-lg" style={{ color: 'var(--text-primary)' }}>
-              GCI<span className="text-[#D4A017]"> Institute</span>
-            </span>
-          </div>
+          <img
+            src="/images/logo-light.png"
+            alt="Global Computer Institute"
+            className="h-10 w-auto object-contain"
+            style={{
+              filter: isDark ? 'brightness(0) invert(1)' : 'none',
+            }}
+          />
         </div>
 
         {/* Nav links */}
-        {NAV_LINKS.map(({ label, href }) => {
+        {[...NAV_LINKS, ...(user ? AUTH_NAV_LINKS : [])].map(({ label, href }) => {
           const active = pathname === href || (href !== '/' && pathname.startsWith(href));
           return (
             <Link key={label} href={href} data-ml
@@ -352,8 +362,8 @@ export default function Navbar() {
               </div>
               <Link href={dashHref} onClick={() => setMenuOpen(false)}
                 className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl border font-semibold text-sm"
-                style={{ borderColor: 'rgba(212,160,23,0.40)', color: '#D4A017', backgroundColor: 'rgba(212,160,23,0.06)' }}>
-                <LayoutDashboard size={15} />Dashboard
+                style={{ borderColor: 'rgba(212,160,23,0.40)', color: '#D4A017', backgroundColor: 'rgba(212,160,23,0.06)', display: isAdmin ? 'flex' : 'none' }}>
+                <LayoutDashboard size={15} />Admin Dashboard
               </Link>
               <button onClick={handleLogout}
                 className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl font-semibold text-sm border"

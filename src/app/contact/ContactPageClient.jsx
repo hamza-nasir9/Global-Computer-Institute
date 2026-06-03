@@ -44,6 +44,8 @@ const CAMPUSES = [
 
 export default function ContactPageClient() {
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState('');
   const [form, setForm] = useState({ name: '', email: '', phone: '', subject: '', message: '' });
   const cardsRef = useRef(null);
   const formRef = useRef(null);
@@ -70,11 +72,31 @@ export default function ContactPageClient() {
 
   const handleChange = (e) => {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    if (formError) setFormError('');
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubmitted(true);
+    if (!form.name.trim() || !form.email.trim() || !form.message.trim()) {
+      setFormError('Please fill in all required fields.');
+      return;
+    }
+    setSubmitting(true);
+    setFormError('');
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Submission failed.');
+      setSubmitted(true);
+    } catch (err) {
+      setFormError(err.message || 'Something went wrong. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const inputStyle = { 
@@ -279,11 +301,21 @@ export default function ContactPageClient() {
                       onBlur={e => e.currentTarget.style.borderColor = 'var(--border-medium)'} />
                   </div>
                   
+                  {formError && (
+                    <div className="flex items-center gap-2 p-3 rounded-xl text-xs"
+                      style={{ backgroundColor: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', color: '#f87171' }}>
+                      <Send size={12} />{formError}
+                    </div>
+                  )}
+                  
                   <button 
                     type="submit" 
-                    className="flex items-center justify-center gap-2 w-full bg-gold-gradient text-black font-bold py-3.5 rounded-xl text-sm transition-transform duration-200 hover:scale-[1.02] hover:-translate-y-0.5 active:scale-95" 
+                    disabled={submitting}
+                    className="flex items-center justify-center gap-2 w-full bg-gold-gradient text-black font-bold py-3.5 rounded-xl text-sm transition-transform duration-200 hover:scale-[1.02] hover:-translate-y-0.5 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed" 
                     style={{ boxShadow: 'var(--shadow-gold)' }}>
-                    <Send size={16} />Send Message
+                    {submitting
+                      ? <><span className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />Sending…</>
+                      : <><Send size={16} />Send Message</>}
                   </button>
                 </form>
               )}

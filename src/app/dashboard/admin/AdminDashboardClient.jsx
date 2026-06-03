@@ -1,10 +1,7 @@
 'use client';
 /**
- * AdminDashboardClient
- *
- * HOOKS FIX: All hooks declared unconditionally at top.
- * The previous version had `if (user && user.role !== 'admin') return null`
- * after the hooks block which violated Rules of Hooks on logout.
+ * AdminDashboardClient — with Under Review status, Tracking ID display,
+ * and full status filter/dropdown support.
  */
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -17,22 +14,25 @@ import {
   Users, FileText, CheckCircle, Clock, XCircle, Search,
   ChevronDown, Printer, Trash2, Eye, Download, X,
   Mail, Phone, MapPin, CreditCard, Calendar, BookOpen,
-  RefreshCw, GraduationCap, ArrowRight,
+  RefreshCw, GraduationCap, ArrowRight, AlertCircle, Hash,
 } from 'lucide-react';
 
 const SS = {
-  Pending:  { bg:'rgba(251,146,60,0.15)',  text:'#FB923C', border:'rgba(251,146,60,0.3)'  },
-  Approved: { bg:'rgba(74,222,128,0.15)',  text:'#4ADE80', border:'rgba(74,222,128,0.3)'  },
-  Rejected: { bg:'rgba(248,113,113,0.15)', text:'#F87171', border:'rgba(248,113,113,0.3)' },
+  Pending:       { bg:'rgba(251,146,60,0.15)',  text:'#FB923C', border:'rgba(251,146,60,0.3)'  },
+  'Under Review':{ bg:'rgba(96,165,250,0.15)',  text:'#60A5FA', border:'rgba(96,165,250,0.3)'  },
+  Approved:      { bg:'rgba(74,222,128,0.15)',  text:'#4ADE80', border:'rgba(74,222,128,0.3)'  },
+  Rejected:      { bg:'rgba(248,113,113,0.15)', text:'#F87171', border:'rgba(248,113,113,0.3)' },
 };
+
+const ALL_STATUSES = ['Pending', 'Under Review', 'Approved', 'Rejected'];
 
 const isMongoId = (s) => /^[a-f0-9]{24}$/i.test(String(s ?? ''));
 
 function exportCSV(data) {
   if (!data.length) return;
-  const H = ['ID','Name','Father','Email','Phone','CNIC','Gender','DOB','Address','Course','Qualification','Status','Date'];
+  const H = ['Tracking ID','ID','Name','Father','Email','Phone','CNIC','Gender','DOB','Address','Course','Qualification','Status','Date'];
   const R = data.map(s => [
-    s.id, s.fullName, s.fatherName, s.email, s.phone,
+    s.trackingId || '', s.id, s.fullName, s.fatherName, s.email, s.phone,
     s.cnic, s.gender, s.dob, `"${s.address||''}"`,
     `"${s.course||''}"`, `"${s.qualification||''}"`, s.status,
     new Date(s.submittedAt).toLocaleString('en-PK'),
@@ -45,7 +45,6 @@ function exportCSV(data) {
 }
 
 export default function AdminDashboardClient() {
-  // ─── ALL HOOKS UNCONDITIONALLY AT TOP ────────────────────────────────────
   const { user }     = useAuth();
   const router       = useRouter();
   const searchParams = useSearchParams();
@@ -61,19 +60,15 @@ export default function AdminDashboardClient() {
 
   const tab = searchParams.get('tab') || 'overview';
 
-  // Auth guard — redirect non-admins, but never before auth is resolved
   useEffect(() => {
     if (user && user.role !== 'admin') {
-      router.replace('/dashboard/student');
+      router.replace('/');
     }
   }, [user, router]);
 
-  // Load admissions — tries API first (both MongoDB and local admin),
-  // falls back to localStorage if API fails or returns nothing
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      // Try API regardless of user ID type (local admin works too via 'x-user-id')
       const res = await fetch('/api/admission', {
         headers: {
           'Content-Type': 'application/json',
@@ -88,7 +83,6 @@ export default function AdminDashboardClient() {
           id:          String(a._id || a.id),
           submittedAt: a.submittedAt || a.createdAt || new Date().toISOString(),
         }));
-        // Merge with localStorage records (show both MongoDB + local submissions)
         const localRecords = getAllStudents();
         const mongoIds = new Set(records.map(r => r.id));
         const localOnly = localRecords.filter(r => !mongoIds.has(String(r.id)));
@@ -96,7 +90,6 @@ export default function AdminDashboardClient() {
         return;
       }
     } catch {}
-    // Fallback: localStorage only
     setStudents(getAllStudents());
   }, [user]);
 
@@ -111,7 +104,7 @@ export default function AdminDashboardClient() {
     if (search.trim()) {
       const q = search.toLowerCase();
       list = list.filter(s =>
-        [s.fullName, s.email, s.course, s.cnic, s.phone].some(v => v?.toLowerCase().includes(q))
+        [s.fullName, s.email, s.course, s.cnic, s.phone, s.trackingId].some(v => v?.toLowerCase().includes(q))
       );
     }
     list.sort((a, b) =>
@@ -123,10 +116,11 @@ export default function AdminDashboardClient() {
   }, [students, statusF, courseF, search, sortBy]);
 
   const stats = useMemo(() => ({
-    total:    students.length,
-    pending:  students.filter(s => s.status === 'Pending').length,
-    approved: students.filter(s => s.status === 'Approved').length,
-    rejected: students.filter(s => s.status === 'Rejected').length,
+    total:       students.length,
+    pending:     students.filter(s => s.status === 'Pending').length,
+    underReview: students.filter(s => s.status === 'Under Review').length,
+    approved:    students.filter(s => s.status === 'Approved').length,
+    rejected:    students.filter(s => s.status === 'Rejected').length,
   }), [students]);
 
   const allCourses = useMemo(() =>
@@ -135,7 +129,6 @@ export default function AdminDashboardClient() {
   );
 
   async function handleStatus(id, status) {
-    // Optimistic UI update
     const updater = s => (String(s.id) === String(id) || String(s._id) === String(id)) ? { ...s, status } : s;
     setStudents(prev => prev.map(updater));
     if (viewS) setViewS(v => ({ ...v, status }));
@@ -176,9 +169,7 @@ export default function AdminDashboardClient() {
     }
     deleteStudent(id);
   }
-  // ─── END HOOKS SECTION ───────────────────────────────────────────────────
 
-  // DashLayout handles auth guard. This component only renders when user exists.
   if (!user) return null;
 
   const IS = {
@@ -202,13 +193,14 @@ export default function AdminDashboardClient() {
             </p>
           </div>
 
-          {/* Stats grid */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+          {/* Stats grid — 5 cards */}
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4">
             {[
-              { icon: Users,       label: 'Total',    value: stats.total,    color: '#D4A017' },
-              { icon: Clock,       label: 'Pending',  value: stats.pending,  color: '#FB923C' },
-              { icon: CheckCircle, label: 'Approved', value: stats.approved, color: '#4ADE80' },
-              { icon: XCircle,     label: 'Rejected', value: stats.rejected, color: '#F87171' },
+              { icon: Users,         label: 'Total',        value: stats.total,       color: '#D4A017' },
+              { icon: Clock,         label: 'Pending',      value: stats.pending,     color: '#FB923C' },
+              { icon: AlertCircle,   label: 'Under Review', value: stats.underReview, color: '#60A5FA' },
+              { icon: CheckCircle,   label: 'Approved',     value: stats.approved,    color: '#4ADE80' },
+              { icon: XCircle,       label: 'Rejected',     value: stats.rejected,    color: '#F87171' },
             ].map(({ icon: Icon, label, value, color }) => (
               <div key={label}
                 className="rounded-2xl p-4 md:p-5 border"
@@ -274,7 +266,9 @@ export default function AdminDashboardClient() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{s.fullName}</p>
-                          <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>{s.course}</p>
+                          <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>
+                            {s.trackingId ? <span className="font-mono text-[#D4A017]">{s.trackingId}</span> : s.course}
+                          </p>
                         </div>
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded-full border flex-shrink-0"
                           style={{ background: sc.bg, color: sc.text, borderColor: sc.border }}>
@@ -317,13 +311,13 @@ export default function AdminDashboardClient() {
             <div className="relative w-full sm:flex-1 sm:min-w-[180px] sm:max-w-xs">
               <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#D4A017] pointer-events-none" />
               <input value={search} onChange={e => setSearch(e.target.value)}
-                placeholder="Search name, email…"
+                placeholder="Search name, email, tracking ID…"
                 style={IS}
                 onFocus={e => e.currentTarget.style.borderColor = '#D4A017'}
                 onBlur={e => e.currentTarget.style.borderColor = 'var(--border-medium)'} />
             </div>
             <div className="flex gap-1.5 flex-wrap">
-              {['All', 'Pending', 'Approved', 'Rejected'].map(s => (
+              {['All', 'Pending', 'Under Review', 'Approved', 'Rejected'].map(s => (
                 <button key={s} onClick={() => setStatusF(s)}
                   className="px-2.5 md:px-3 py-1.5 md:py-2 rounded-full text-xs font-semibold border transition-all"
                   style={statusF === s
@@ -376,7 +370,9 @@ export default function AdminDashboardClient() {
                       style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-subtle)' }}>
                       <div className="flex items-center justify-between px-4 py-3 border-b"
                         style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-input)' }}>
-                        <span className="text-xs font-mono truncate" style={{ color: 'var(--text-muted)' }}>GCI-{s.id?.slice(-8)}</span>
+                        <span className="text-xs font-mono truncate" style={{ color: '#D4A017' }}>
+                          {s.trackingId || `GCI-${s.id?.slice(-8)}`}
+                        </span>
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded-full border flex-shrink-0"
                           style={{ background: sc.bg, color: sc.text, borderColor: sc.border }}>{s.status}</span>
                       </div>
@@ -397,7 +393,7 @@ export default function AdminDashboardClient() {
                         <select value={s.status || 'Pending'} onChange={e => handleStatus(s.id, e.target.value)}
                           className="text-[11px] font-bold px-2 py-1.5 rounded-full border cursor-pointer focus:outline-none flex-shrink-0"
                           style={{ background: sc.bg, color: sc.text, borderColor: sc.border }}>
-                          {['Pending', 'Approved', 'Rejected'].map(v => <option key={v}>{v}</option>)}
+                          {ALL_STATUSES.map(v => <option key={v}>{v}</option>)}
                         </select>
                         <div className="flex items-center gap-1.5 ml-auto">
                           <button onClick={() => setViewS(s)} title="View"
@@ -426,10 +422,10 @@ export default function AdminDashboardClient() {
               <div className="hidden md:block rounded-2xl border overflow-hidden"
                 style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-subtle)' }}>
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm min-w-[800px]">
+                  <table className="w-full text-sm min-w-[900px]">
                     <thead>
                       <tr style={{ borderBottom: '1px solid var(--border-subtle)', backgroundColor: 'var(--bg-input)' }}>
-                        {['Photo', 'Name', 'Course', 'Contact', 'CNIC', 'Date', 'Status', 'Actions'].map(h => (
+                        {['Photo', 'Name', 'Tracking ID', 'Course', 'Contact', 'Date', 'Status', 'Actions'].map(h => (
                           <th key={h} className="px-4 py-3.5 text-left text-[11px] font-semibold uppercase tracking-wider whitespace-nowrap"
                             style={{ color: 'var(--text-muted)' }}>{h}</th>
                         ))}
@@ -454,9 +450,15 @@ export default function AdminDashboardClient() {
                             </td>
                             <td className="px-4 py-3">
                               <p className="font-semibold text-sm whitespace-nowrap" style={{ color: 'var(--text-primary)' }}>{s.fullName}</p>
-                              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{s.gender} {s.dob ? `· ${s.dob}` : ''}</p>
+                              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{s.gender}{s.dob ? ` · ${s.dob}` : ''}</p>
                             </td>
-                            <td className="px-4 py-3 max-w-[140px]">
+                            <td className="px-4 py-3">
+                              <span className="text-xs font-mono px-2 py-1 rounded-lg"
+                                style={{ background: 'rgba(212,160,23,0.08)', color: '#D4A017', border: '1px solid rgba(212,160,23,0.15)' }}>
+                                {s.trackingId || '—'}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 max-w-[130px]">
                               <span className="text-xs px-2 py-1 rounded-lg block truncate"
                                 style={{ background: 'rgba(212,160,23,0.10)', color: '#D4A017', border: '1px solid rgba(212,160,23,0.20)' }}
                                 title={s.course}>{s.course || '—'}</span>
@@ -465,9 +467,6 @@ export default function AdminDashboardClient() {
                               <p className="text-xs truncate max-w-[130px]" style={{ color: 'var(--text-secondary)' }}>{s.email}</p>
                               <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{s.phone}</p>
                             </td>
-                            <td className="px-4 py-3 text-xs font-mono whitespace-nowrap" style={{ color: 'var(--text-secondary)' }}>
-                              {s.cnic || '—'}
-                            </td>
                             <td className="px-4 py-3 text-xs whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>
                               {new Date(s.submittedAt).toLocaleDateString('en-PK', { day: '2-digit', month: 'short', year: '2-digit' })}
                             </td>
@@ -475,13 +474,13 @@ export default function AdminDashboardClient() {
                               <select value={s.status || 'Pending'} onChange={e => handleStatus(s.id, e.target.value)}
                                 className="text-[11px] font-bold px-2.5 py-1.5 rounded-full border cursor-pointer focus:outline-none"
                                 style={{ background: sc.bg, color: sc.text, borderColor: sc.border }}>
-                                {['Pending', 'Approved', 'Rejected'].map(v => <option key={v}>{v}</option>)}
+                                {ALL_STATUSES.map(v => <option key={v}>{v}</option>)}
                               </select>
                             </td>
                             <td className="px-4 py-3">
                               <div className="flex items-center gap-1.5">
                                 {[
-                                  { icon: Eye,    fn: () => setViewS(s),         title: 'View',  red: false },
+                                  { icon: Eye,    fn: () => setViewS(s),         title: 'View',   red: false },
                                   { icon: Trash2, fn: () => setDelConfirm(s.id), title: 'Delete', red: true  },
                                 ].map(({ icon: Icon, fn, title, red }) => (
                                   <button key={title} onClick={fn} title={title}
@@ -530,7 +529,7 @@ export default function AdminDashboardClient() {
                 </div>
                 <div className="min-w-0">
                   <h3 className="font-display font-bold text-sm md:text-base truncate" style={{ color: 'var(--text-primary)' }}>{viewS.fullName}</h3>
-                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>GCI-{viewS.id?.slice(-8)}</p>
+                  <p className="text-xs font-mono" style={{ color: '#D4A017' }}>{viewS.trackingId || `GCI-${viewS.id?.slice(-8)}`}</p>
                 </div>
               </div>
               <div className="flex gap-2 flex-shrink-0">
@@ -570,6 +569,11 @@ export default function AdminDashboardClient() {
                       {viewS.course}
                     </span>
                   </div>
+                  {viewS.trackingId && (
+                    <p className="text-xs mt-2 font-mono" style={{ color: 'var(--text-muted)' }}>
+                      Tracking: <span style={{ color: '#D4A017' }}>{viewS.trackingId}</span>
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -600,15 +604,15 @@ export default function AdminDashboardClient() {
                 <p className="text-sm" style={{ color: 'var(--text-primary)' }}>{viewS.address || '—'}</p>
               </div>
 
-              {/* ── Extended GCI Form Fields ── */}
+              {/* Extended GCI Form Fields */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {[
-                  { label: 'Profession',     value: viewS.profession    },
-                  { label: 'Guardian Mob',   value: viewS.guardianPhone },
-                  { label: 'WhatsApp #',     value: viewS.whatsapp      },
-                  { label: 'Timing',         value: viewS.timing        },
-                  { label: 'Date of Admission', value: viewS.dateOfAdmission },
-                  { label: 'Reg No',         value: viewS.regNo || viewS.cnic },
+                  { label: 'Profession',        value: viewS.profession    },
+                  { label: 'Guardian Mob',       value: viewS.guardianPhone },
+                  { label: 'WhatsApp #',         value: viewS.whatsapp      },
+                  { label: 'Timing',             value: viewS.timing        },
+                  { label: 'Date of Admission',  value: viewS.dateOfAdmission },
+                  { label: 'Reg No',             value: viewS.regNo || viewS.cnic },
                 ].filter(f => f.value).map(({ label, value }) => (
                   <div key={label} className="p-3 rounded-xl border" style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-subtle)' }}>
                     <p className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>{label}</p>
@@ -617,7 +621,6 @@ export default function AdminDashboardClient() {
                 ))}
               </div>
 
-              {/* How they heard */}
               {viewS.howKnew && (
                 <div className="p-3 rounded-xl border" style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-subtle)' }}>
                   <p className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>How They Found Us</p>
@@ -625,7 +628,6 @@ export default function AdminDashboardClient() {
                 </div>
               )}
 
-              {/* All selected courses */}
               {viewS.selectedCourses && (
                 <div className="p-3 rounded-xl border" style={{ backgroundColor: 'var(--bg-input)', borderColor: 'var(--border-subtle)' }}>
                   <p className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>Selected Courses</p>
@@ -643,7 +645,6 @@ export default function AdminDashboardClient() {
                 </div>
               )}
 
-              {/* Fee section */}
               {(viewS.monthlyFee || viewS.admissionFee || viewS.totalFee) && (
                 <div className="grid grid-cols-3 gap-3">
                   {[
@@ -659,9 +660,10 @@ export default function AdminDashboardClient() {
                 </div>
               )}
 
+              {/* Status buttons — all 4 statuses */}
               <div className="flex items-center gap-2 flex-wrap pt-1">
-                <span className="text-xs font-semibold flex-shrink-0" style={{ color: 'var(--text-secondary)' }}>Status:</span>
-                {['Pending', 'Approved', 'Rejected'].map(s => {
+                <span className="text-xs font-semibold flex-shrink-0" style={{ color: 'var(--text-secondary)' }}>Update Status:</span>
+                {ALL_STATUSES.map(s => {
                   const sc = SS[s];
                   return (
                     <button key={s} onClick={() => handleStatus(viewS.id, s)}

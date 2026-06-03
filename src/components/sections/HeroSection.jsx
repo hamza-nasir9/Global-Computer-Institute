@@ -8,7 +8,7 @@ import { HERO_IMAGES } from '@/lib/data';
 const SLIDES = [
   { id:0, badge:'Admissions Open — Spring 2025', title:'Shape Your Future', highlight:'With Digital Excellence',
     description:"Karachi's premier computer institute — empowering the next generation of tech leaders with world-class education, industry partnerships, and 3 state-of-the-art campuses.",
-    primaryBtn:{ label:'Apply Now', href:'/admissions', Icon:GraduationCap }, secondaryBtn:{ label:'Explore Courses', href:'/courses', Icon:BookOpen } },
+    primaryBtn:{ label:'Apply Now', href:'/admission-form', Icon:GraduationCap }, secondaryBtn:{ label:'Explore Courses', href:'/courses', Icon:BookOpen } },
   { id:1, badge:'Ranked #1 Computer Institute in Karachi', title:'Master In-Demand', highlight:'Tech Skills Today',
     description:"From AI and Machine Learning to Web Development and Graphic Design — our industry-aligned programs ensure you graduate job-ready with real-world expertise.",
     primaryBtn:{ label:'View Programs', href:'/courses', Icon:BookOpen }, secondaryBtn:{ label:'Meet Faculty', href:'/faculty', Icon:GraduationCap } },
@@ -76,7 +76,12 @@ export default function HeroSection() {
   }, [autoPlay, next]);
 
   return (
-    <section className="relative h-screen min-h-[700px] overflow-hidden bg-[#0a0a0a]">
+    <section className="relative overflow-hidden bg-[#0a0a0a]"
+      style={{
+        /* 100vh on desktop, auto (content-driven) on mobile with a minimum */
+        height: 'clamp(580px, 100svh, 100vh)',
+        minHeight: '100svh',
+      }}>
 
       {/* Background images */}
       {SLIDES.map((slide, i) => (

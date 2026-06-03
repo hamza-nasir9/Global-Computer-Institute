@@ -128,7 +128,7 @@ export default function CoursesPageClient() {
             center />
           <div className="flex flex-col sm:flex-row gap-4 justify-center mt-6">
             <Link 
-              href="/admissions" 
+              href="/admission-form" 
               className="inline-flex items-center justify-center gap-2 bg-gold-gradient text-black font-black px-6 md:px-9 py-3 md:py-4 rounded-full text-xs md:text-sm transition-transform duration-200 hover:scale-105"
               style={{ boxShadow: 'var(--shadow-gold)' }}>
               <GraduationCap size={16} /> Apply Now

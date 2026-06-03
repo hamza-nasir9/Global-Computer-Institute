@@ -12,17 +12,12 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
-  LayoutDashboard, UserCircle, FileText, Users, ClipboardList,
+  LayoutDashboard, Users, ClipboardList,
   LogOut, Menu, X, ChevronRight, ChevronLeft, Sun, Moon, ExternalLink,
 } from 'lucide-react';
 import { useAuth }  from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
 
-const STUDENT_NAV = [
-  { icon: LayoutDashboard, label: 'Overview',      href: '/dashboard/student'               },
-  { icon: UserCircle,      label: 'My Profile',    href: '/dashboard/student?tab=profile'   },
-  { icon: FileText,        label: 'My Admissions', href: '/dashboard/student?tab=admission' },
-];
 const ADMIN_NAV = [
   { icon: LayoutDashboard, label: 'Overview',    href: '/dashboard/admin'                   },
   { icon: Users,           label: 'Students',    href: '/dashboard/admin?tab=students'      },
@@ -57,6 +52,8 @@ export default function DashLayout({ children, activeTab }) {
     if (authLoading) return;
     if (!user) {
       router.replace(`/auth/login?redirect=${encodeURIComponent(pathname)}`);
+    } else if (user.role !== 'admin') {
+      router.replace('/');
     }
   }, [user, authLoading, pathname, router]);
 
@@ -98,8 +95,8 @@ export default function DashLayout({ children, activeTab }) {
   if (!user) return null;
 
   // ─── Variables that depend on user (safe after the null check above) ─────
-  const navLinks = user.role === 'admin' ? ADMIN_NAV : STUDENT_NAV;
-  const dashHref = user.role === 'admin' ? '/dashboard/admin' : '/dashboard/student';
+  const navLinks = ADMIN_NAV;
+  const dashHref = '/dashboard/admin';
 
   function handleLogout() {
     setProfileOpen(false);

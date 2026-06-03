@@ -103,9 +103,9 @@ export async function PATCH(req, { params }) {
     const body = await req.json().catch(() => ({}));
     const { status } = body;
 
-    if (!['Pending', 'Approved', 'Rejected'].includes(status)) {
+    if (!['Pending', 'Under Review', 'Approved', 'Rejected'].includes(status)) {
       return NextResponse.json(
-        { error: 'Status must be Pending, Approved, or Rejected.' },
+        { error: 'Status must be Pending, Under Review, Approved, or Rejected.' },
         { status: 400 }
       );
     }
