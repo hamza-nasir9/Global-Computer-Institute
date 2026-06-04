@@ -164,7 +164,7 @@ export default function Navbar() {
               src="/images/logo-light.png"
               alt="Global Computer Institute"
               suppressHydrationWarning
-              className="md:h-28 h-20 w-auto object-contain transition-all duration-200"
+              className="md:h-28 h-20 w-auto mt-5 object-contain transition-all duration-200"
               style={{
                 filter: (isSolid && !isDark)
                   ? 'none'                              /* light solid navbar → dark logo visible */
