@@ -138,53 +138,63 @@ export default function AdmissionFormClient() {
     }));
   }, []);
 
-  const handleImage = useCallback(async (e) => {
+  /**
+   * handleImage — resize client-side with canvas → store as base64 in MongoDB.
+   *
+   * WHY BASE64 (not file upload):
+   *   • Vercel serverless: writeFile to public/ is ephemeral — files vanish after the request ends.
+   *   • No CDN/cloud storage configured.
+   *   • Canvas resize keeps stored value under ~80 KB (well within MongoDB 16 MB doc limit).
+   *   • <img src={base64}> works identically to a URL everywhere — admin dashboard, print, etc.
+   */
+  const handleImage = useCallback((e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!['image/jpeg', 'image/jpg', 'image/png'].includes(file.type)) {
+    if (!['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(file.type)) {
       setErrors(p => ({ ...p, image: 'Please upload a JPG or PNG image.' }));
       return;
     }
-    if (file.size > 2 * 1024 * 1024) {
-      setErrors(p => ({ ...p, image: 'Image must be smaller than 2 MB.' }));
+    if (file.size > 5 * 1024 * 1024) {
+      setErrors(p => ({ ...p, image: 'Image must be smaller than 5 MB.' }));
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (ev) => setImgPreview(ev.target.result);
-    reader.readAsDataURL(file);
-
-    setImgUploading(true);
     setErrors(p => ({ ...p, image: '' }));
-    try {
-      const fd = new FormData();
-      fd.append('photo', file);
+    setImgUploading(true);
 
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        headers: {
-          ...(user?.id ? { 'x-user-id': String(user.id) } : {}),
-          ...(user?.role ? { 'x-user-role': String(user.role) } : {}),
-        },
-        body: fd,
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        setErrors(p => ({ ...p, image: data.error || 'Upload failed.' }));
-        setImgPreview('');
-        return;
-      }
-
-      setImgPath(data.url);
-    } catch {
-      setErrors(p => ({ ...p, image: 'Upload failed — please try again.' }));
-      setImgPreview('');
-    } finally {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const originalDataUrl = ev.target.result;
+      // Resize to max 400×400, JPEG q=0.78 → ~30-100 KB
+      const img = new window.Image();
+      img.onload = () => {
+        const MAX = 400;
+        let { width, height } = img;
+        if (width > MAX || height > MAX) {
+          if (width > height) { height = Math.round(height * MAX / width); width = MAX; }
+          else                { width  = Math.round(width  * MAX / height); height = MAX; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width; canvas.height = height;
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+        const base64 = canvas.toDataURL('image/jpeg', 0.78);
+        setImgPreview(base64);
+        setImgPath(base64);
+        setImgUploading(false);
+      };
+      img.onerror = () => {
+        setErrors(p => ({ ...p, image: 'Could not read image. Please try another file.' }));
+        setImgUploading(false);
+      };
+      img.src = originalDataUrl;
+    };
+    reader.onerror = () => {
+      setErrors(p => ({ ...p, image: 'Could not read file. Please try again.' }));
       setImgUploading(false);
-    }
-  }, [user]);
+    };
+    reader.readAsDataURL(file);
+  }, []);
 
   function validate() {
     const e = {};
@@ -742,7 +752,7 @@ export default function AdmissionFormClient() {
                   {submitting
                     ? <span className="w-4 h-4 md:w-5 md:h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
                     : imgUploading
-                      ? <><span className="w-4 h-4 md:w-5 md:h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />Uploading photo…</>
+                      ? <><span className="w-4 h-4 md:w-5 md:h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />Processing photo…</>
                       : <><CheckCircle size={16} className="md:w-[18px] md:h-[18px]" />Submit Admission Application</>}
                 </button>
 

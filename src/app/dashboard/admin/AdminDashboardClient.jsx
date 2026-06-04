@@ -44,6 +44,33 @@ function exportCSV(data) {
   a.click();
 }
 
+/**
+ * StudentAvatar — renders student photo with graceful fallback.
+ * Shows initial letter when image is missing, empty, or fails to load.
+ */
+function StudentAvatar({ image, name, className = '', size = 'sm' }) {
+  const [failed, setFailed] = useState(false);
+  const initial = (name || '?')[0].toUpperCase();
+  const showImg = image && !failed;
+  return showImg ? (
+    <img
+      src={image}
+      alt={name}
+      className={`w-full h-full object-cover ${className}`}
+      onError={() => setFailed(true)}
+    />
+  ) : (
+    <div className="w-full h-full flex items-center justify-center font-bold"
+      style={{
+        backgroundColor: 'var(--bg-input)',
+        color: '#D4A017',
+        fontSize: size === 'lg' ? '2rem' : size === 'md' ? '1.1rem' : '0.75rem',
+      }}>
+      {initial}
+    </div>
+  );
+}
+
 export default function AdminDashboardClient() {
   const { user }     = useAuth();
   const router       = useRouter();
@@ -259,10 +286,7 @@ export default function AdminDashboardClient() {
                         onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
                         onClick={() => setViewS(s)}>
                         <div className="w-8 h-8 rounded-lg overflow-hidden border flex-shrink-0" style={{ borderColor: 'var(--border-medium)' }}>
-                          {s.image
-                            ? <img src={s.image} alt={s.fullName} className="w-full h-full object-cover" />
-                            : <div className="w-full h-full flex items-center justify-center font-bold text-xs"
-                              style={{ backgroundColor: 'var(--bg-input)', color: '#D4A017' }}>{s.fullName?.[0]}</div>}
+                          <StudentAvatar image={s.image} name={s.fullName} size="sm" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{s.fullName}</p>
@@ -378,10 +402,7 @@ export default function AdminDashboardClient() {
                       </div>
                       <div className="p-4 flex items-start gap-3">
                         <div className="w-10 h-10 rounded-xl overflow-hidden border flex-shrink-0" style={{ borderColor: 'var(--border-gold)' }}>
-                          {s.image
-                            ? <img src={s.image} alt={s.fullName} className="w-full h-full object-cover" />
-                            : <div className="w-full h-full flex items-center justify-center font-bold text-sm"
-                              style={{ backgroundColor: 'var(--bg-input)', color: '#D4A017' }}>{s.fullName?.[0]}</div>}
+                          <StudentAvatar image={s.image} name={s.fullName} size="sm" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="font-semibold text-sm truncate" style={{ color: 'var(--text-primary)' }}>{s.fullName}</p>
@@ -442,10 +463,7 @@ export default function AdminDashboardClient() {
                             <td className="px-4 py-3">
                               <div className="w-9 h-9 rounded-xl overflow-hidden border cursor-pointer flex-shrink-0"
                                 style={{ borderColor: 'var(--border-medium)' }} onClick={() => setViewS(s)}>
-                                {s.image
-                                  ? <img src={s.image} alt={s.fullName} className="w-full h-full object-cover" />
-                                  : <div className="w-full h-full flex items-center justify-center font-bold text-xs"
-                                    style={{ backgroundColor: 'var(--bg-input)', color: '#D4A017' }}>{s.fullName?.[0]}</div>}
+                                <StudentAvatar image={s.image} name={s.fullName} size="sm" />
                               </div>
                             </td>
                             <td className="px-4 py-3">
@@ -522,10 +540,7 @@ export default function AdminDashboardClient() {
               style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-card)' }}>
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-8 h-8 rounded-xl overflow-hidden border flex-shrink-0" style={{ borderColor: 'var(--border-gold)' }}>
-                  {viewS.image
-                    ? <img src={viewS.image} alt={viewS.fullName} className="w-full h-full object-cover" />
-                    : <div className="w-full h-full flex items-center justify-center font-bold text-xs"
-                      style={{ backgroundColor: 'var(--bg-input)', color: '#D4A017' }}>{viewS.fullName?.[0]}</div>}
+                  <StudentAvatar image={viewS.image} name={viewS.fullName} size="sm" />
                 </div>
                 <div className="min-w-0">
                   <h3 className="font-display font-bold text-sm md:text-base truncate" style={{ color: 'var(--text-primary)' }}>{viewS.fullName}</h3>
@@ -551,10 +566,7 @@ export default function AdminDashboardClient() {
             <div className="p-4 md:p-5 space-y-4">
               <div className="flex items-start gap-3 md:gap-4">
                 <div className="w-16 md:w-24 h-20 md:h-28 rounded-2xl overflow-hidden border flex-shrink-0" style={{ borderColor: 'var(--border-gold)' }}>
-                  {viewS.image
-                    ? <img src={viewS.image} alt={viewS.fullName} className="w-full h-full object-cover" />
-                    : <div className="w-full h-full flex items-center justify-center font-display font-black text-2xl md:text-3xl"
-                      style={{ backgroundColor: 'var(--bg-input)', color: '#D4A017' }}>{viewS.fullName?.[0]}</div>}
+                  <StudentAvatar image={viewS.image} name={viewS.fullName} size="lg" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h2 className="font-display font-bold text-lg md:text-xl truncate" style={{ color: 'var(--text-primary)' }}>{viewS.fullName}</h2>
