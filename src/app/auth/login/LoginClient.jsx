@@ -141,10 +141,10 @@ export default function LoginClient() {
             <p className="text-[11px] text-center mb-1.5 font-semibold" style={{ color:'var(--text-muted)' }}>Admin credentials</p>
             <div className="space-y-1">
               <p className="text-[11px] text-center" style={{ color:'var(--text-muted)' }}>
-                Email: <span className="text-[#D4A017] font-mono">admin@gmail.com</span>
+                {/* Email: <span className="text-[#D4A017] font-mono">admin@gmail.com</span> */}
               </p>
               <p className="text-[11px] text-center" style={{ color:'var(--text-muted)' }}>
-                Password: <span className="text-[#D4A017] font-mono">Admin@123</span>
+                {/* Password: <span className="text-[#D4A017] font-mono">Admin@123</span> */}
               </p>
             </div>
             <div className="mt-2 pt-2 border-t" style={{ borderColor:'var(--border-subtle)' }}>
