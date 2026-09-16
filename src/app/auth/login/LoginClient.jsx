@@ -147,7 +147,7 @@ export default function LoginClient() {
                  Password: <span className="text-[#D4A017] font-mono">Admin@123</span> 
               </p> */}
             </div>
-            <div className="mt-2 pt-2 border-t" style={{ borderColor:'var(--border-subtle)' }}>
+            {/* <div className="mt-2 pt-2 border-t" style={{ borderColor:'var(--border-subtle)' }}>
               <p className="text-[10px] text-center" style={{ color:'var(--text-muted)' }}>
                 Getting errors? Check{' '}
                 <a href="/api/test-db" target="_blank" className="text-[#D4A017] hover:underline">
@@ -155,7 +155,7 @@ export default function LoginClient() {
                 </a>{' '}and read{' '}
                 <span className="text-[#D4A017]">SETUP.md</span>
               </p>
-            </div>
+            </div> */}
           </div>
         </div>
         <p className="text-center text-xs mt-5">
